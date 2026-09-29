@@ -15,7 +15,7 @@ export const formConfig = {
   endpoint:
     import.meta.env.VITE_FORM_ENDPOINT || 'https://api.web3forms.com/submit',
   web3formsKey:
-    import.meta.env.VITE_WEB3FORMS_KEY || '1ffeced5-44cb-4334-aaa7-5afd868c9e61',
+    import.meta.env.VITE_WEB3FORMS_KEY || 'e4050a85-4301-45d4-9cba-e0a87dec9b05',
   maxToken: import.meta.env.VITE_MAX_BOT_TOKEN || '',
   maxChatId: import.meta.env.VITE_MAX_CHAT_ID || '',
   maxUserId: import.meta.env.VITE_MAX_USER_ID || '',
