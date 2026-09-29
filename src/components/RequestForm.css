@@ -1,0 +1,134 @@
+.request-form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 30px;
+  box-shadow: var(--shadow);
+}
+
+.request-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.request-form__row--full {
+  grid-template-columns: 1fr;
+}
+
+.request-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.request-form__field input,
+.request-form__field select,
+.request-form__field textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.96rem;
+  font-family: inherit;
+  font-weight: 400;
+  color: var(--color-text);
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.request-form__field input:focus,
+.request-form__field select:focus,
+.request-form__field textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.request-form__field textarea {
+  resize: vertical;
+}
+
+.request-form__consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 4px 0 18px;
+  font-size: 0.84rem;
+  color: var(--color-muted);
+  font-weight: 400;
+}
+
+.request-form__consent input {
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.request-form__error {
+  color: var(--color-danger);
+  font-size: 0.9rem;
+  margin: 0 0 14px;
+}
+
+.request-form__hint {
+  margin: 14px 0 0;
+  font-size: 0.82rem;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.request-form__hint a {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.request-form__hint a:hover {
+  text-decoration: underline;
+}
+
+.request-form--done {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.request-form__done-icon {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: var(--color-success);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.request-form--done h3 {
+  margin: 6px 0 0;
+}
+
+.request-form--done p {
+  color: var(--color-muted);
+  max-width: 420px;
+}
+
+@media (max-width: 560px) {
+  .request-form {
+    padding: 22px;
+  }
+
+  .request-form__row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
