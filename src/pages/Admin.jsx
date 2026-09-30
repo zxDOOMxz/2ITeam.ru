@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
 import { TICKET_STATUSES, formatDate } from '../lib/tickets.js'
@@ -11,6 +11,7 @@ function pickRelation(value) {
 export default function Admin() {
   const [tickets, setTickets] = useState([])
   const [filter, setFilter] = useState('all')
+  const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -30,6 +31,20 @@ export default function Admin() {
     load()
   }, [load])
 
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-tickets')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'tickets' },
+        () => load(),
+      )
+      .subscribe()
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [load])
+
   const changeStatus = async (ticketId, status) => {
     const prev = tickets
     setTickets((list) =>
@@ -45,8 +60,32 @@ export default function Admin() {
     }
   }
 
-  const filtered =
-    filter === 'all' ? tickets : tickets.filter((t) => t.status === filter)
+  const stats = useMemo(() => {
+    const byStatus = {}
+    for (const s of TICKET_STATUSES) byStatus[s.value] = 0
+    for (const t of tickets) byStatus[t.status] = (byStatus[t.status] || 0) + 1
+    return byStatus
+  }, [tickets])
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return tickets.filter((t) => {
+      if (filter !== 'all' && t.status !== filter) return false
+      if (!q) return true
+      const client = pickRelation(t.profiles)
+      const company = pickRelation(client?.companies)
+      return [
+        String(t.number),
+        t.subject,
+        t.service,
+        client?.full_name,
+        client?.email,
+        company?.name,
+      ]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(q))
+    })
+  }, [tickets, filter, query])
 
   return (
     <section className="container section">
@@ -59,6 +98,29 @@ export default function Admin() {
 
       {error && <div className="alert alert--error">{error}</div>}
 
+      <div className="stat-grid">
+        <div className="stat-card">
+          <strong>{tickets.length}</strong>
+          <span>Всего</span>
+        </div>
+        {TICKET_STATUSES.map((s) => (
+          <div className="stat-card" key={s.value}>
+            <strong>{stats[s.value] || 0}</strong>
+            <span>{s.label}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="admin-toolbar">
+        <input
+          type="search"
+          className="admin-search"
+          placeholder="Поиск: номер, тема, клиент, компания…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      </div>
+
       <div className="admin-filters">
         <button
           type="button"
@@ -67,25 +129,22 @@ export default function Admin() {
         >
           Все ({tickets.length})
         </button>
-        {TICKET_STATUSES.map((s) => {
-          const count = tickets.filter((t) => t.status === s.value).length
-          return (
-            <button
-              key={s.value}
-              type="button"
-              className={`filter-btn ${filter === s.value ? 'is-active' : ''}`}
-              onClick={() => setFilter(s.value)}
-            >
-              {s.label} ({count})
-            </button>
-          )
-        })}
+        {TICKET_STATUSES.map((s) => (
+          <button
+            key={s.value}
+            type="button"
+            className={`filter-btn ${filter === s.value ? 'is-active' : ''}`}
+            onClick={() => setFilter(s.value)}
+          >
+            {s.label} ({stats[s.value] || 0})
+          </button>
+        ))}
       </div>
 
       {loading ? (
         <p className="muted">Загрузка…</p>
       ) : filtered.length === 0 ? (
-        <div className="empty-state">Заявок нет.</div>
+        <div className="empty-state">Ничего не найдено.</div>
       ) : (
         <div className="ticket-list">
           {filtered.map((t) => {

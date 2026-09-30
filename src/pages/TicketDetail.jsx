@@ -75,6 +75,30 @@ export default function TicketDetail() {
     loadMessages()
   }, [loadTicket, loadMessages])
 
+  useEffect(() => {
+    const channel = supabase
+      .channel(`ticket-${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'ticket_messages',
+          filter: `ticket_id=eq.${id}`,
+        },
+        () => loadMessages(),
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'tickets', filter: `id=eq.${id}` },
+        () => loadTicket(),
+      )
+      .subscribe()
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [id, loadMessages, loadTicket])
+
   const respond = async (action) => {
     setResponding(true)
     setRespondError('')
@@ -172,9 +196,17 @@ export default function TicketDetail() {
           <div className="ticket-item__num">Заявка № {ticket.number}</div>
           <h1>{ticket.subject}</h1>
         </div>
-        <span className={`status-badge status-badge--${ticket.status}`}>
-          {STATUS_LABELS[ticket.status] ?? ticket.status}
-        </span>
+        <div className="ticket-detail__actions">
+          <Link
+            to={`/cabinet/tickets/${id}/act`}
+            className="btn btn--ghost btn--sm"
+          >
+            Акт
+          </Link>
+          <span className={`status-badge status-badge--${ticket.status}`}>
+            {STATUS_LABELS[ticket.status] ?? ticket.status}
+          </span>
+        </div>
       </div>
 
       {ticket.status === 'waiting' && (

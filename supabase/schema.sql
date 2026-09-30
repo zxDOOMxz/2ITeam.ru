@@ -196,6 +196,33 @@ create trigger ticket_messages_set_author
   before insert on public.ticket_messages
   for each row execute function public.set_message_author();
 
+-- Автосмена статуса при сообщениях (внутренние заметки не влияют)
+create or replace function public.on_message_status()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.is_internal then
+    return new;
+  end if;
+  if new.author_role = 'admin' then
+    update public.tickets set status = 'waiting'
+      where id = new.ticket_id and status in ('new', 'in_progress');
+  else
+    update public.tickets set status = 'in_progress'
+      where id = new.ticket_id and status in ('waiting', 'resolved');
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists ticket_messages_status on public.ticket_messages;
+create trigger ticket_messages_status
+  after insert on public.ticket_messages
+  for each row execute function public.on_message_status();
+
 -- Запрет менять себе роль (кроме админов и контекста SQL/сервиса)
 create or replace function public.prevent_role_change()
 returns trigger
@@ -438,6 +465,22 @@ create policy ticket_files_delete on storage.objects
     bucket_id = 'ticket-files'
     and public.can_view_ticket(nullif((storage.foldername(name))[1], '')::uuid)
   );
+
+-- =========================================================
+-- Realtime (сообщения и заявки в реальном времени)
+-- =========================================================
+
+do $$
+begin
+  begin
+    alter publication supabase_realtime add table public.ticket_messages;
+  exception when duplicate_object then null;
+  end;
+  begin
+    alter publication supabase_realtime add table public.tickets;
+  exception when duplicate_object then null;
+  end;
+end $$;
 
 -- =========================================================
 -- Назначение администратора (после регистрации):
