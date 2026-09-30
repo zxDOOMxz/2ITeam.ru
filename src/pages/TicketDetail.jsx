@@ -17,7 +17,7 @@ export default function TicketDetail() {
     supabase
       .from('tickets')
       .select(
-        'id, number, subject, service, status, priority, description, created_at, updated_at',
+        'id, number, subject, service, status, priority, description, created_at, updated_at, profiles(email, full_name, phone, companies(name))',
       )
       .eq('id', id)
       .maybeSingle()
@@ -55,6 +55,13 @@ export default function TicketDetail() {
 
   const currentIndex = TIMELINE.indexOf(ticket.status)
 
+  const client = Array.isArray(ticket.profiles)
+    ? ticket.profiles[0]
+    : ticket.profiles
+  const company = Array.isArray(client?.companies)
+    ? client.companies[0]
+    : client?.companies
+
   return (
     <section className="container section">
       <div className="ticket-detail__head">
@@ -78,6 +85,44 @@ export default function TicketDetail() {
         </div>
 
         <div>
+          <div className="detail-block">
+            <h2>Клиент</h2>
+            <dl className="detail-list">
+              <div>
+                <dt>Имя</dt>
+                <dd>{client?.full_name || '—'}</dd>
+              </div>
+              {company?.name && (
+                <div>
+                  <dt>Компания</dt>
+                  <dd>{company.name}</dd>
+                </div>
+              )}
+              <div>
+                <dt>Email</dt>
+                <dd>
+                  {client?.email ? (
+                    <a href={`mailto:${client.email}`}>{client.email}</a>
+                  ) : (
+                    '—'
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt>Телефон</dt>
+                <dd>
+                  {client?.phone ? (
+                    <a href={`tel:${client.phone.replace(/[^+\d]/g, '')}`}>
+                      {client.phone}
+                    </a>
+                  ) : (
+                    '—'
+                  )}
+                </dd>
+              </div>
+            </dl>
+          </div>
+
           <div className="detail-block">
             <h2>Детали</h2>
             <dl className="detail-list">

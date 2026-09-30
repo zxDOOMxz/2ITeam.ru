@@ -4,6 +4,10 @@ import { supabase } from '../lib/supabase.js'
 import { TICKET_STATUSES, formatDate } from '../lib/tickets.js'
 import './Account.css'
 
+function pickRelation(value) {
+  return Array.isArray(value) ? value[0] : value
+}
+
 export default function Admin() {
   const [tickets, setTickets] = useState([])
   const [filter, setFilter] = useState('all')
@@ -14,7 +18,7 @@ export default function Admin() {
     const { data, error: err } = await supabase
       .from('tickets')
       .select(
-        'id, number, subject, service, status, created_at, profiles(email, full_name)',
+        'id, number, subject, service, status, created_at, profiles(email, full_name, phone, companies(name))',
       )
       .order('created_at', { ascending: false })
     if (err) setError(err.message)
@@ -85,7 +89,8 @@ export default function Admin() {
       ) : (
         <div className="ticket-list">
           {filtered.map((t) => {
-            const client = Array.isArray(t.profiles) ? t.profiles[0] : t.profiles
+            const client = pickRelation(t.profiles)
+            const company = pickRelation(client?.companies)
             return (
               <div className="admin-row" key={t.id}>
                 <div className="admin-row__num">№ {t.number}</div>
@@ -97,11 +102,33 @@ export default function Admin() {
                     {t.subject}
                   </Link>
                   <div className="admin-row__client">
-                    {client?.full_name || client?.email || '—'} ·{' '}
-                    {formatDate(t.created_at)}
+                    {t.service || '—'} · {formatDate(t.created_at)}
                   </div>
                 </div>
-                <div className="admin-row__client">{t.service || '—'}</div>
+                <div className="admin-row__contact">
+                  <div className="admin-row__client">
+                    {client?.full_name || '—'}
+                  </div>
+                  {company?.name && (
+                    <div className="admin-row__client">
+                      Компания: {company.name}
+                    </div>
+                  )}
+                  <div className="admin-row__client">
+                    {client?.email && (
+                      <a href={`mailto:${client.email}`}>{client.email}</a>
+                    )}
+                    {client?.phone && (
+                      <>
+                        {client?.email ? ' · ' : ''}
+                        <a href={`tel:${client.phone.replace(/[^+\d]/g, '')}`}>
+                          {client.phone}
+                        </a>
+                      </>
+                    )}
+                    {!client?.email && !client?.phone && 'контактов нет'}
+                  </div>
+                </div>
                 <select
                   value={t.status}
                   onChange={(e) => changeStatus(t.id, e.target.value)}

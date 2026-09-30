@@ -281,6 +281,15 @@
   font-weight: 600;
 }
 
+.detail-list a {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.detail-list a:hover {
+  text-decoration: underline;
+}
+
 .timeline {
   list-style: none;
   margin: 0;
@@ -350,7 +359,7 @@
 
 .admin-row {
   display: grid;
-  grid-template-columns: 80px 1fr 200px 170px;
+  grid-template-columns: 80px 1fr 300px 170px;
   gap: 16px;
   align-items: center;
   padding: 14px 18px;
@@ -358,6 +367,22 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
+}
+
+.admin-row__contact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.admin-row__contact a {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.admin-row__contact a:hover {
+  text-decoration: underline;
 }
 
 .admin-row__num {
