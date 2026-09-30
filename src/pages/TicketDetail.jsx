@@ -12,10 +12,11 @@ import './Account.css'
 
 const TIMELINE = ['new', 'in_progress', 'waiting', 'resolved', 'closed']
 const BUCKET = 'ticket-files'
+const IMAGE_RE = /\.(jpe?g|png|gif|webp|bmp|svg)$/i
 
 export default function TicketDetail() {
   const { id } = useParams()
-  const { user, isAdmin } = useAuth()
+  const { user, isStaff } = useAuth()
 
   const [ticket, setTicket] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -141,7 +142,7 @@ export default function TicketDetail() {
         ticket_id: id,
         author_id: user.id,
         body: body.trim(),
-        is_internal: isAdmin ? internal : false,
+        is_internal: isStaff ? internal : false,
         attachments: uploaded,
       })
       if (error) {
@@ -275,17 +276,33 @@ export default function TicketDetail() {
                   {m.body && <div className="chat__body">{m.body}</div>}
                   {m.attachments?.length > 0 && (
                     <div className="chat__files">
-                      {m.attachments.map((a) => (
-                        <a
-                          key={a.path}
-                          href={signed[a.path] || '#'}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="chat__file"
-                        >
-                          📎 {a.name}
-                        </a>
-                      ))}
+                      {m.attachments.map((a) =>
+                        IMAGE_RE.test(a.name) && signed[a.path] ? (
+                          <a
+                            key={a.path}
+                            href={signed[a.path]}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="chat__thumb-link"
+                          >
+                            <img
+                              src={signed[a.path]}
+                              alt={a.name}
+                              className="chat__thumb"
+                            />
+                          </a>
+                        ) : (
+                          <a
+                            key={a.path}
+                            href={signed[a.path] || '#'}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="chat__file"
+                          >
+                            📎 {a.name}
+                          </a>
+                        ),
+                      )}
                     </div>
                   )}
                   {m.is_internal && (
@@ -316,7 +333,7 @@ export default function TicketDetail() {
                 </div>
               )}
               <div className="chat__form-row">
-                {isAdmin && (
+                {isStaff && (
                   <label className="chat__internal-check">
                     <input
                       type="checkbox"

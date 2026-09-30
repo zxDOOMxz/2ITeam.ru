@@ -16,7 +16,7 @@ export default function Header() {
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const { user, isAdmin, signOut } = useAuth()
+  const { user, isAdmin, isStaff, signOut } = useAuth()
 
   useEffect(() => {
     setOpen(false)
@@ -62,7 +62,7 @@ export default function Header() {
               >
                 Кабинет
               </NavLink>
-              {isAdmin && (
+              {isStaff && (
                 <NavLink
                   to="/admin"
                   className={({ isActive }) =>
@@ -70,6 +70,16 @@ export default function Header() {
                   }
                 >
                   Админка
+                </NavLink>
+              )}
+              {isAdmin && (
+                <NavLink
+                  to="/admin/users"
+                  className={({ isActive }) =>
+                    `header__link ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  Пользователи
                 </NavLink>
               )}
               <button

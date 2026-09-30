@@ -373,9 +373,22 @@
 
 .chat__files {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-top: 8px;
+}
+
+.chat__thumb-link {
+  display: inline-block;
+}
+
+.chat__thumb {
+  display: block;
+  max-width: 220px;
+  max-height: 160px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  object-fit: cover;
 }
 
 .chat__file {
@@ -540,6 +553,44 @@
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.user-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.user-row__main {
+  min-width: 0;
+}
+
+.user-row__name {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-row__meta {
+  font-size: 0.82rem;
+  color: var(--color-muted);
+}
+
+.user-row select {
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.88rem;
+  background: #fff;
+  flex-shrink: 0;
 }
 
 .filter-btn {

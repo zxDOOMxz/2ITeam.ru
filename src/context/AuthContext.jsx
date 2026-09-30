@@ -63,6 +63,7 @@ export function AuthProvider({ children }) {
       profile,
       company: profile?.companies ?? null,
       isAdmin: profile?.role === 'admin',
+      isStaff: profile?.role === 'admin' || profile?.role === 'manager',
       loading,
       signIn: (email, password) =>
         supabase.auth.signInWithPassword({ email, password }),

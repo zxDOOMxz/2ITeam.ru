@@ -28,10 +28,15 @@ create table if not exists public.profiles (
   email text,
   full_name text,
   phone text,
-  role text not null default 'client' check (role in ('client', 'admin')),
+  role text not null default 'client' check (role in ('client', 'manager', 'admin')),
   company_id uuid references public.companies (id) on delete set null,
   created_at timestamptz not null default now()
 );
+
+-- Роли: client / manager / admin
+alter table public.profiles drop constraint if exists profiles_role_check;
+alter table public.profiles
+  add constraint profiles_role_check check (role in ('client', 'manager', 'admin'));
 
 create table if not exists public.tickets (
   id uuid primary key default gen_random_uuid(),
@@ -145,6 +150,20 @@ as $$
   );
 $$;
 
+-- Сотрудник поддержки (manager или admin)
+create or replace function public.is_staff()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid() and p.role in ('manager', 'admin')
+  );
+$$;
+
 -- Компания текущего пользователя
 create or replace function public.current_company_id()
 returns uuid
@@ -169,7 +188,7 @@ as $$
     where t.id = p_ticket_id
       and (
         t.user_id = auth.uid()
-        or public.is_admin()
+        or public.is_staff()
         or (t.company_id is not null and t.company_id = public.current_company_id())
       )
   );
@@ -326,7 +345,7 @@ begin
   end if;
   allowed := (t.user_id = auth.uid())
     or (t.company_id is not null and t.company_id = public.current_company_id())
-    or public.is_admin();
+    or public.is_staff();
   if not allowed then
     raise exception 'not allowed';
   end if;
@@ -356,7 +375,7 @@ drop policy if exists profiles_select_own on public.profiles;
 create policy profiles_select_own on public.profiles
   for select using (
     auth.uid() = id
-    or public.is_admin()
+    or public.is_staff()
     or (company_id is not null and company_id = public.current_company_id())
   );
 
@@ -364,10 +383,15 @@ drop policy if exists profiles_update_own on public.profiles;
 create policy profiles_update_own on public.profiles
   for update using (auth.uid() = id) with check (auth.uid() = id);
 
+-- админ может менять роли/данные любых пользователей
+drop policy if exists profiles_update_admin on public.profiles;
+create policy profiles_update_admin on public.profiles
+  for update using (public.is_admin()) with check (public.is_admin());
+
 -- companies: своя компания или админ
 drop policy if exists companies_select on public.companies;
 create policy companies_select on public.companies
-  for select using (id = public.current_company_id() or public.is_admin());
+  for select using (id = public.current_company_id() or public.is_staff());
 
 drop policy if exists companies_insert on public.companies;
 create policy companies_insert on public.companies
@@ -389,7 +413,7 @@ drop policy if exists tickets_select on public.tickets;
 create policy tickets_select on public.tickets
   for select using (
     auth.uid() = user_id
-    or public.is_admin()
+    or public.is_staff()
     or (company_id is not null and company_id = public.current_company_id())
   );
 
@@ -399,7 +423,7 @@ create policy tickets_insert on public.tickets
 
 drop policy if exists tickets_update_admin on public.tickets;
 create policy tickets_update_admin on public.tickets
-  for update using (public.is_admin()) with check (public.is_admin());
+  for update using (public.is_staff()) with check (public.is_staff());
 
 drop policy if exists tickets_delete_admin on public.tickets;
 create policy tickets_delete_admin on public.tickets
@@ -481,6 +505,105 @@ begin
   exception when duplicate_object then null;
   end;
 end $$;
+
+-- =========================================================
+-- Уведомления клиенту (email через Resend + pg_net)
+-- =========================================================
+
+create extension if not exists pg_net;
+
+create table if not exists public.app_settings (
+  key text primary key,
+  value text
+);
+alter table public.app_settings enable row level security;
+-- политик нет: читать может только security definer (send_email)
+
+create or replace function public.send_email(p_to text, p_subject text, p_html text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  api_key text;
+  from_email text;
+begin
+  if p_to is null or position('@' in p_to) = 0 then
+    return;
+  end if;
+  select value into api_key from public.app_settings where key = 'resend_api_key';
+  select value into from_email from public.app_settings where key = 'email_from';
+  if api_key is null or from_email is null then
+    return;
+  end if;
+  perform net.http_post(
+    url := 'https://api.resend.com/emails',
+    headers := jsonb_build_object(
+      'Authorization', 'Bearer ' || api_key,
+      'Content-Type', 'application/json'
+    ),
+    body := jsonb_build_object(
+      'from', from_email,
+      'to', p_to,
+      'subject', p_subject,
+      'html', p_html
+    )
+  );
+end;
+$$;
+
+create or replace function public.notify_on_message()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  t public.tickets;
+  owner_email text;
+  staff_email text;
+  base_url text;
+  link text;
+begin
+  if new.is_internal then
+    return new;
+  end if;
+  select * into t from public.tickets where id = new.ticket_id;
+  select p.email into owner_email from public.profiles p where p.id = t.user_id;
+  select value into staff_email from public.app_settings where key = 'staff_email';
+  select value into base_url from public.app_settings where key = 'site_url';
+  link := coalesce(base_url, 'https://2iteam.ru') || '/cabinet/tickets/' || t.id;
+
+  if new.author_role = 'admin' or new.author_role = 'manager' then
+    perform public.send_email(
+      owner_email,
+      'Ответ по вашей заявке №' || t.number,
+      '<p>Здравствуйте!</p><p>По заявке №' || t.number || ' поступило новое сообщение от поддержки.</p><p><a href="' || link || '">Открыть заявку</a></p>'
+    );
+  else
+    perform public.send_email(
+      coalesce(staff_email, 'support@2iteam.ru'),
+      'Новое сообщение в заявке №' || t.number,
+      '<p>Клиент написал в заявке №' || t.number || '.</p><p><a href="' || link || '">Открыть заявку</a></p>'
+    );
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists ticket_messages_notify on public.ticket_messages;
+create trigger ticket_messages_notify
+  after insert on public.ticket_messages
+  for each row execute function public.notify_on_message();
+
+-- Настройка уведомлений (выполнить после регистрации в Resend):
+-- insert into public.app_settings (key, value) values
+--   ('resend_api_key', 're_...'),
+--   ('email_from', '2ITeam <noreply@2iteam.ru>'),
+--   ('staff_email', 'support@2iteam.ru'),
+--   ('site_url', 'https://2iteam.ru')
+-- on conflict (key) do update set value = excluded.value;
 
 -- =========================================================
 -- Назначение администратора (после регистрации):

@@ -16,6 +16,7 @@ import TicketDetail from './pages/TicketDetail.jsx'
 import Profile from './pages/Profile.jsx'
 import Act from './pages/Act.jsx'
 import Admin from './pages/Admin.jsx'
+import Users from './pages/Users.jsx'
 
 export default function App() {
   return (
@@ -75,8 +76,16 @@ export default function App() {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute adminOnly>
+              <ProtectedRoute staffOnly>
                 <Admin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute adminOnly>
+                <Users />
               </ProtectedRoute>
             }
           />
