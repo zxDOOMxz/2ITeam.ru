@@ -8,7 +8,7 @@ const navItems = [
   { to: '/', label: 'Главная' },
   { to: '/services', label: 'Услуги' },
   { to: '/pricing', label: 'Тарифы' },
-  { to: '/about', label: 'О компании' },
+  { to: '/about', label: 'О нас' },
   { to: '/contacts', label: 'Контакты' },
 ]
 

@@ -61,6 +61,7 @@
   font-size: 0.94rem;
   font-weight: 500;
   color: var(--color-muted);
+  white-space: nowrap;
   transition: color 0.15s ease, background 0.15s ease;
 }
 
@@ -144,7 +145,7 @@
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1040px) {
   .header__burger {
     display: flex;
     margin-left: auto;

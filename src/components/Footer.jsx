@@ -23,7 +23,7 @@ export default function Footer() {
           <h4>Разделы</h4>
           <Link to="/services">Услуги</Link>
           <Link to="/pricing">Тарифы</Link>
-          <Link to="/about">О компании</Link>
+          <Link to="/about">О нас</Link>
           <Link to="/contacts">Контакты</Link>
         </div>
 

@@ -25,7 +25,7 @@ export default function About() {
     <>
       <section className="page-hero">
         <div className="container">
-          <span className="eyebrow">О компании</span>
+          <span className="eyebrow">О нас</span>
           <h1>{company.name} — удалённая ИТ-поддержка</h1>
           <p>
             Мы команда специалистов по ИТ-поддержке, 1С и разработке. Помогаем
