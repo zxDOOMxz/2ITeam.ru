@@ -53,6 +53,20 @@ create index if not exists tickets_user_id_idx on public.tickets (user_id);
 create index if not exists tickets_status_idx on public.tickets (status);
 create index if not exists tickets_company_id_idx on public.tickets (company_id);
 
+-- Реквизиты для закрывающих документов (актов)
+alter table public.profiles add column if not exists address text;
+alter table public.profiles add column if not exists inn text;
+
+alter table public.companies add column if not exists legal_name text;
+alter table public.companies add column if not exists kpp text;
+alter table public.companies add column if not exists ogrn text;
+alter table public.companies add column if not exists legal_address text;
+alter table public.companies add column if not exists bank_name text;
+alter table public.companies add column if not exists bik text;
+alter table public.companies add column if not exists account text;
+alter table public.companies add column if not exists corr_account text;
+alter table public.companies add column if not exists contact_person text;
+
 -- =========================================================
 -- Функции
 -- =========================================================
@@ -206,6 +220,43 @@ begin
 end;
 $$;
 
+-- Ответ клиента по заявке в статусе "waiting": accept (принять) / rework (на доработку)
+create or replace function public.respond_to_ticket(p_ticket_id uuid, p_action text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  t public.tickets;
+  allowed boolean;
+begin
+  if auth.uid() is null then
+    raise exception 'not authenticated';
+  end if;
+  select * into t from public.tickets where id = p_ticket_id;
+  if t.id is null then
+    raise exception 'ticket not found';
+  end if;
+  allowed := (t.user_id = auth.uid())
+    or (t.company_id is not null and t.company_id = public.current_company_id())
+    or public.is_admin();
+  if not allowed then
+    raise exception 'not allowed';
+  end if;
+  if t.status <> 'waiting' then
+    raise exception 'ticket is not awaiting client response';
+  end if;
+  if p_action = 'accept' then
+    update public.tickets set status = 'resolved' where id = p_ticket_id;
+  elsif p_action = 'rework' then
+    update public.tickets set status = 'in_progress' where id = p_ticket_id;
+  else
+    raise exception 'unknown action';
+  end if;
+end;
+$$;
+
 -- =========================================================
 -- RLS
 -- =========================================================
@@ -281,6 +332,7 @@ grant usage, select on all sequences in schema public to authenticated;
 grant execute on function public.create_company(text, text) to authenticated;
 grant execute on function public.join_company(text) to authenticated;
 grant execute on function public.leave_company() to authenticated;
+grant execute on function public.respond_to_ticket(uuid, text) to authenticated;
 
 -- =========================================================
 -- Назначение администратора (после регистрации):

@@ -77,6 +77,12 @@
   gap: 16px;
 }
 
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+
 .auth__links a {
   color: var(--color-primary);
   font-weight: 600;
@@ -243,6 +249,30 @@
 .ticket-detail__head h1 {
   font-size: 1.5rem;
   margin: 4px 0 0;
+}
+
+.respond-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius);
+}
+
+.respond-panel p {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+}
+
+.respond-panel__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .detail-grid {
@@ -478,6 +508,10 @@
   .auth__row {
     grid-template-columns: 1fr;
     gap: 0;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
   }
 
   .admin-row {

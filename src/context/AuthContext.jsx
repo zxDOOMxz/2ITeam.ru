@@ -11,7 +11,7 @@ import { supabase } from '../lib/supabase.js'
 const AuthContext = createContext(null)
 
 const PROFILE_SELECT =
-  'id, email, full_name, phone, role, company_id, companies(id, name, inn, invite_code)'
+  'id, email, full_name, phone, address, inn, role, company_id, companies(id, name, inn, invite_code, legal_name, kpp, ogrn, legal_address, bank_name, bik, account, corr_account, contact_person, owner_id)'
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
@@ -94,6 +94,16 @@ export function AuthProvider({ children }) {
         })
         if (!error) await loadProfile(userId)
         return { data, error }
+      },
+      updateCompany: async (fields) => {
+        const companyId = profile?.company_id
+        if (!companyId) return { error: new Error('Компания не найдена') }
+        const { error } = await supabase
+          .from('companies')
+          .update(fields)
+          .eq('id', companyId)
+        if (!error) await loadProfile(userId)
+        return { error }
       },
       joinCompany: async (code) => {
         const { data, error } = await supabase.rpc('join_company', { code })

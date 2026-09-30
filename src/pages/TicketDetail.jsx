@@ -1,7 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
-import { TICKET_STATUSES, STATUS_LABELS, PRIORITY_LABELS, formatDate } from '../lib/tickets.js'
+import {
+  TICKET_STATUSES,
+  STATUS_LABELS,
+  PRIORITY_LABELS,
+  formatDate,
+} from '../lib/tickets.js'
 import './Account.css'
 
 const TIMELINE = ['new', 'in_progress', 'waiting', 'resolved', 'closed']
@@ -11,26 +16,41 @@ export default function TicketDetail() {
   const [ticket, setTicket] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [responding, setResponding] = useState(false)
+  const [respondError, setRespondError] = useState('')
 
-  useEffect(() => {
-    let active = true
-    supabase
+  const loadTicket = useCallback(async () => {
+    const { data } = await supabase
       .from('tickets')
       .select(
         'id, number, subject, service, status, priority, description, created_at, updated_at, profiles(email, full_name, phone, companies(name))',
       )
       .eq('id', id)
       .maybeSingle()
-      .then(({ data }) => {
-        if (!active) return
-        setTicket(data)
-        setNotFound(!data)
-        setLoading(false)
-      })
-    return () => {
-      active = false
-    }
+    setTicket(data)
+    setNotFound(!data)
+    setLoading(false)
   }, [id])
+
+  useEffect(() => {
+    loadTicket()
+  }, [loadTicket])
+
+  const respond = async (action) => {
+    setResponding(true)
+    setRespondError('')
+    const { error } = await supabase.rpc('respond_to_ticket', {
+      p_ticket_id: id,
+      p_action: action,
+    })
+    if (error) {
+      setRespondError(error.message || 'Не удалось выполнить действие')
+      setResponding(false)
+      return
+    }
+    await loadTicket()
+    setResponding(false)
+  }
 
   if (loading) {
     return (
@@ -73,6 +93,40 @@ export default function TicketDetail() {
           {STATUS_LABELS[ticket.status] ?? ticket.status}
         </span>
       </div>
+
+      {ticket.status === 'waiting' && (
+        <div className="respond-panel">
+          <div>
+            <strong>Ожидается ваш ответ</strong>
+            <p className="muted">
+              Проверьте результат и примите работу или отправьте на доработку.
+            </p>
+          </div>
+          <div className="respond-panel__actions">
+            <button
+              type="button"
+              className="btn btn--primary"
+              disabled={responding}
+              onClick={() => respond('accept')}
+            >
+              Принять
+            </button>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              disabled={responding}
+              onClick={() => respond('rework')}
+            >
+              На доработку
+            </button>
+          </div>
+          {respondError && (
+            <div className="alert alert--error" style={{ margin: 0 }}>
+              {respondError}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="detail-grid">
         <div>
