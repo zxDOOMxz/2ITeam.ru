@@ -11,6 +11,7 @@ import {
 import './Account.css'
 
 const TIMELINE = ['new', 'in_progress', 'waiting', 'resolved', 'closed']
+const BUCKET = 'ticket-files'
 
 export default function TicketDetail() {
   const { id } = useParams()
@@ -23,7 +24,9 @@ export default function TicketDetail() {
   const [respondError, setRespondError] = useState('')
 
   const [messages, setMessages] = useState([])
+  const [signed, setSigned] = useState({})
   const [body, setBody] = useState('')
+  const [files, setFiles] = useState([])
   const [internal, setInternal] = useState(false)
   const [posting, setPosting] = useState(false)
   const [msgError, setMsgError] = useState('')
@@ -44,10 +47,27 @@ export default function TicketDetail() {
   const loadMessages = useCallback(async () => {
     const { data } = await supabase
       .from('ticket_messages')
-      .select('id, body, is_internal, created_at, author_name, author_role')
+      .select(
+        'id, body, is_internal, created_at, author_name, author_role, attachments',
+      )
       .eq('ticket_id', id)
       .order('created_at', { ascending: true })
-    setMessages(data ?? [])
+    const list = data ?? []
+    setMessages(list)
+
+    const paths = list.flatMap((m) =>
+      (m.attachments || []).map((a) => a.path),
+    )
+    if (paths.length) {
+      const { data: urls } = await supabase.storage
+        .from(BUCKET)
+        .createSignedUrls(paths, 3600)
+      const map = {}
+      for (const u of urls || []) if (u.signedUrl) map[u.path] = u.signedUrl
+      setSigned(map)
+    } else {
+      setSigned({})
+    }
   }, [id])
 
   useEffect(() => {
@@ -73,23 +93,46 @@ export default function TicketDetail() {
 
   const postMessage = async (event) => {
     event.preventDefault()
-    if (!body.trim()) return
+    if (!body.trim() && files.length === 0) return
     setPosting(true)
     setMsgError('')
-    const { error } = await supabase.from('ticket_messages').insert({
-      ticket_id: id,
-      author_id: user.id,
-      body: body.trim(),
-      is_internal: isAdmin ? internal : false,
-    })
-    setPosting(false)
-    if (error) {
-      setMsgError(error.message || 'Не удалось отправить сообщение')
-      return
+
+    try {
+      const uploaded = []
+      for (const file of files) {
+        const safeName = file.name.replace(/[^\w.-]+/g, '_')
+        const path = `${id}/${crypto.randomUUID()}-${safeName}`
+        const { error: upErr } = await supabase.storage
+          .from(BUCKET)
+          .upload(path, file)
+        if (upErr) {
+          setMsgError('Не удалось загрузить файл: ' + file.name)
+          setPosting(false)
+          return
+        }
+        uploaded.push({ name: file.name, path, size: file.size })
+      }
+
+      const { error } = await supabase.from('ticket_messages').insert({
+        ticket_id: id,
+        author_id: user.id,
+        body: body.trim(),
+        is_internal: isAdmin ? internal : false,
+        attachments: uploaded,
+      })
+      if (error) {
+        setMsgError(error.message || 'Не удалось отправить сообщение')
+        setPosting(false)
+        return
+      }
+      setBody('')
+      setFiles([])
+      setInternal(false)
+      await loadMessages()
+    } catch {
+      setMsgError('Что-то пошло не так при отправке')
     }
-    setBody('')
-    setInternal(false)
-    await loadMessages()
+    setPosting(false)
   }
 
   if (loading) {
@@ -197,7 +240,22 @@ export default function TicketDetail() {
                     </span>
                     <span className="chat__time">{formatDate(m.created_at)}</span>
                   </div>
-                  <div className="chat__body">{m.body}</div>
+                  {m.body && <div className="chat__body">{m.body}</div>}
+                  {m.attachments?.length > 0 && (
+                    <div className="chat__files">
+                      {m.attachments.map((a) => (
+                        <a
+                          key={a.path}
+                          href={signed[a.path] || '#'}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="chat__file"
+                        >
+                          📎 {a.name}
+                        </a>
+                      ))}
+                    </div>
+                  )}
                   {m.is_internal && (
                     <span className="chat__internal-tag">Внутренняя заметка</span>
                   )}
@@ -214,6 +272,17 @@ export default function TicketDetail() {
                 onChange={(e) => setBody(e.target.value)}
                 placeholder="Написать сообщение…"
               />
+              <input
+                type="file"
+                multiple
+                className="chat__file-input"
+                onChange={(e) => setFiles(Array.from(e.target.files))}
+              />
+              {files.length > 0 && (
+                <div className="chat__pending">
+                  Прикреплено: {files.map((f) => f.name).join(', ')}
+                </div>
+              )}
               <div className="chat__form-row">
                 {isAdmin && (
                   <label className="chat__internal-check">
@@ -228,7 +297,7 @@ export default function TicketDetail() {
                 <button
                   type="submit"
                   className="btn btn--primary"
-                  disabled={posting || !body.trim()}
+                  disabled={posting || (!body.trim() && files.length === 0)}
                 >
                   {posting ? 'Отправляем…' : 'Отправить'}
                 </button>

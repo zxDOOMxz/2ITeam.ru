@@ -76,11 +76,13 @@ create table if not exists public.ticket_messages (
   author_role text,
   body text not null,
   is_internal boolean not null default false,
+  attachments jsonb not null default '[]'::jsonb,
   created_at timestamptz not null default now()
 );
 
 alter table public.ticket_messages add column if not exists author_name text;
 alter table public.ticket_messages add column if not exists author_role text;
+alter table public.ticket_messages add column if not exists attachments jsonb not null default '[]'::jsonb;
 
 create index if not exists ticket_messages_ticket_id_idx on public.ticket_messages (ticket_id);
 
@@ -407,6 +409,35 @@ grant execute on function public.create_company(text, text) to authenticated;
 grant execute on function public.join_company(text) to authenticated;
 grant execute on function public.leave_company() to authenticated;
 grant execute on function public.respond_to_ticket(uuid, text) to authenticated;
+
+-- =========================================================
+-- Хранилище файлов (вложения к сообщениям)
+-- =========================================================
+
+insert into storage.buckets (id, name, public)
+values ('ticket-files', 'ticket-files', false)
+on conflict (id) do nothing;
+
+drop policy if exists ticket_files_select on storage.objects;
+create policy ticket_files_select on storage.objects
+  for select using (
+    bucket_id = 'ticket-files'
+    and public.can_view_ticket(nullif((storage.foldername(name))[1], '')::uuid)
+  );
+
+drop policy if exists ticket_files_insert on storage.objects;
+create policy ticket_files_insert on storage.objects
+  for insert with check (
+    bucket_id = 'ticket-files'
+    and public.can_view_ticket(nullif((storage.foldername(name))[1], '')::uuid)
+  );
+
+drop policy if exists ticket_files_delete on storage.objects;
+create policy ticket_files_delete on storage.objects
+  for delete using (
+    bucket_id = 'ticket-files'
+    and public.can_view_ticket(nullif((storage.foldername(name))[1], '')::uuid)
+  );
 
 -- =========================================================
 -- Назначение администратора (после регистрации):
