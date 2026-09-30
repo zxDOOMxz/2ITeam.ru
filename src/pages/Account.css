@@ -1,0 +1,428 @@
+.muted {
+  color: var(--color-muted);
+}
+
+/* ---------- Авторизация ---------- */
+.auth {
+  display: flex;
+  justify-content: center;
+  padding: 56px 0;
+}
+
+.auth__card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 34px;
+  box-shadow: var(--shadow);
+}
+
+.auth__card h1 {
+  font-size: 1.5rem;
+  margin-bottom: 6px;
+}
+
+.auth__subtitle {
+  color: var(--color-muted);
+  font-size: 0.95rem;
+  margin-bottom: 22px;
+}
+
+.auth__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.auth__field input,
+.auth__field select,
+.auth__field textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.96rem;
+  font-family: inherit;
+  font-weight: 400;
+  color: var(--color-text);
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.auth__field input:focus,
+.auth__field select:focus,
+.auth__field textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.auth__links {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  font-size: 0.88rem;
+  flex-wrap: wrap;
+}
+
+.auth__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.auth__links a {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.auth__links a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Сообщения ---------- */
+.alert {
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.alert--error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.alert--success {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.alert--info {
+  background: var(--color-surface-alt);
+  color: var(--color-primary-dark);
+  border: 1px solid var(--color-primary-soft);
+}
+
+/* ---------- Кабинет ---------- */
+.cabinet__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+}
+
+.cabinet__head h1 {
+  font-size: 1.7rem;
+  margin: 0;
+}
+
+.cabinet__head p {
+  color: var(--color-muted);
+  margin: 6px 0 0;
+}
+
+.ticket-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ticket-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 22px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.ticket-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-color: var(--color-primary-soft);
+}
+
+.ticket-item__main {
+  min-width: 0;
+}
+
+.ticket-item__num {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+.ticket-item__subject {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 2px 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ticket-item__meta {
+  font-size: 0.82rem;
+  color: var(--color-muted);
+}
+
+.ticket-item__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ---------- Статусы ---------- */
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-badge--new {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+}
+
+.status-badge--in_progress {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.status-badge--waiting {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.status-badge--resolved {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status-badge--closed {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+/* ---------- Карточка заявки ---------- */
+.ticket-detail__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.ticket-detail__head h1 {
+  font-size: 1.5rem;
+  margin: 4px 0 0;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 28px;
+  align-items: start;
+}
+
+.detail-block {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.detail-block + .detail-block {
+  margin-top: 20px;
+}
+
+.detail-block h2 {
+  font-size: 1.05rem;
+  margin-bottom: 12px;
+}
+
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-list dt {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted);
+}
+
+.detail-list dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.timeline li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+.timeline li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-border);
+}
+
+.timeline li.is-done {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.timeline li.is-done::before {
+  background: var(--color-primary);
+}
+
+/* ---------- Админка ---------- */
+.admin-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.filter-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-muted);
+  transition: all 0.15s ease;
+}
+
+.filter-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.filter-btn.is-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.admin-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 200px 170px;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-row__num {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+.admin-row__subject {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-row__client {
+  font-size: 0.84rem;
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-row select {
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.88rem;
+  background: #fff;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--color-muted);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+}
+
+@media (max-width: 860px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .auth__row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .admin-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ticket-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ticket-item__side {
+    align-items: flex-start;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+  }
+}

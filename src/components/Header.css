@@ -86,6 +86,13 @@
   background: var(--color-primary-dark);
 }
 
+.header__link--btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
 .header__phone {
   font-weight: 700;
   font-size: 0.95rem;

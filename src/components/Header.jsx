@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { NavLink, Link, useLocation } from 'react-router-dom'
+import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
 import { company, maxUrl } from '../config.js'
+import { useAuth } from '../context/AuthContext.jsx'
 import './Header.css'
 
 const navItems = [
@@ -14,10 +15,17 @@ const navItems = [
 export default function Header() {
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const { user, isAdmin, signOut } = useAuth()
 
   useEffect(() => {
     setOpen(false)
   }, [pathname])
+
+  const handleSignOut = async () => {
+    await signOut()
+    navigate('/', { replace: true })
+  }
 
   return (
     <header className="header">
@@ -43,6 +51,46 @@ export default function Header() {
               {item.label}
             </NavLink>
           ))}
+
+          {user ? (
+            <>
+              <NavLink
+                to="/cabinet"
+                className={({ isActive }) =>
+                  `header__link ${isActive ? 'is-active' : ''}`
+                }
+              >
+                Кабинет
+              </NavLink>
+              {isAdmin && (
+                <NavLink
+                  to="/admin"
+                  className={({ isActive }) =>
+                    `header__link ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  Админка
+                </NavLink>
+              )}
+              <button
+                type="button"
+                className="header__link header__link--btn"
+                onClick={handleSignOut}
+              >
+                Выйти
+              </button>
+            </>
+          ) : (
+            <NavLink
+              to="/login"
+              className={({ isActive }) =>
+                `header__link ${isActive ? 'is-active' : ''}`
+              }
+            >
+              Войти
+            </NavLink>
+          )}
+
           <a
             className="header__link header__link--cta"
             href={maxUrl}

@@ -35,4 +35,10 @@ export default [
       'react/prop-types': 'off',
     },
   },
+  {
+    files: ['src/context/**/*.jsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ]
