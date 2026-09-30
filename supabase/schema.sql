@@ -107,7 +107,9 @@ security definer
 set search_path = public
 as $$
 begin
-  if new.role is distinct from old.role and not public.is_admin() then
+  if new.role is distinct from old.role
+     and auth.uid() is not null
+     and not public.is_admin() then
     new.role := old.role;
   end if;
   return new;
