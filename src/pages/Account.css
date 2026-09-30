@@ -132,6 +132,12 @@
   margin: 6px 0 0;
 }
 
+.cabinet__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .ticket-list {
   display: flex;
   flex-direction: column;
@@ -422,6 +428,46 @@
   background: var(--color-surface);
   border: 1px dashed var(--color-border);
   border-radius: var(--radius);
+}
+
+.btn--sm {
+  padding: 6px 12px;
+  font-size: 0.82rem;
+}
+
+.company-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.company-code {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.company-code span {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+}
+
+.company-forms {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.company-form__title {
+  font-size: 0.95rem;
+  margin: 0 0 10px;
+}
+
+.company-form--join {
+  border-top: 1px solid var(--color-border);
+  padding-top: 20px;
 }
 
 @media (max-width: 860px) {

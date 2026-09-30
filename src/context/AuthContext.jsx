@@ -10,6 +10,9 @@ import { supabase } from '../lib/supabase.js'
 
 const AuthContext = createContext(null)
 
+const PROFILE_SELECT =
+  'id, email, full_name, phone, role, company_id, companies(id, name, inn, invite_code)'
+
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
@@ -22,7 +25,7 @@ export function AuthProvider({ children }) {
     }
     const { data } = await supabase
       .from('profiles')
-      .select('id, email, full_name, phone, role, company_id')
+      .select(PROFILE_SELECT)
       .eq('id', userId)
       .maybeSingle()
     setProfile(data ?? null)
@@ -51,30 +54,59 @@ export function AuthProvider({ children }) {
     }
   }, [loadProfile])
 
+  const userId = session?.user?.id
+
   const value = useMemo(
     () => ({
       session,
       user: session?.user ?? null,
       profile,
+      company: profile?.companies ?? null,
       isAdmin: profile?.role === 'admin',
       loading,
       signIn: (email, password) =>
         supabase.auth.signInWithPassword({ email, password }),
-      signUp: (email, password, fullName) =>
+      signUp: (email, password, fullName, phone) =>
         supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: fullName } },
+          options: { data: { full_name: fullName, phone } },
         }),
       signOut: () => supabase.auth.signOut(),
       resetPassword: (email) =>
         supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/reset`,
         }),
-      updatePassword: (password) =>
-        supabase.auth.updateUser({ password }),
+      updatePassword: (password) => supabase.auth.updateUser({ password }),
+      reloadProfile: () => loadProfile(userId),
+      updateProfile: async (fields) => {
+        const { error } = await supabase
+          .from('profiles')
+          .update(fields)
+          .eq('id', userId)
+        if (!error) await loadProfile(userId)
+        return { error }
+      },
+      createCompany: async (name, inn) => {
+        const { data, error } = await supabase.rpc('create_company', {
+          p_name: name,
+          p_inn: inn || null,
+        })
+        if (!error) await loadProfile(userId)
+        return { data, error }
+      },
+      joinCompany: async (code) => {
+        const { data, error } = await supabase.rpc('join_company', { code })
+        if (!error) await loadProfile(userId)
+        return { data, error }
+      },
+      leaveCompany: async () => {
+        const { error } = await supabase.rpc('leave_company')
+        if (!error) await loadProfile(userId)
+        return { error }
+      },
     }),
-    [session, profile, loading],
+    [session, profile, loading, userId, loadProfile],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -6,7 +6,7 @@ import { STATUS_LABELS, formatDate } from '../lib/tickets.js'
 import './Account.css'
 
 export default function Cabinet() {
-  const { profile } = useAuth()
+  const { profile, company } = useAuth()
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -32,16 +32,23 @@ export default function Cabinet() {
     <section className="container section">
       <div className="cabinet__head">
         <div>
-          <h1>Мои заявки</h1>
+          <h1>{company ? 'Заявки компании' : 'Мои заявки'}</h1>
           <p>
-            {profile?.full_name
-              ? `Здравствуйте, ${profile.full_name}.`
-              : 'Здесь собраны ваши обращения.'}
+            {company
+              ? `Заявки компании «${company.name}».`
+              : profile?.full_name
+                ? `Здравствуйте, ${profile.full_name}.`
+                : 'Здесь собраны ваши обращения.'}
           </p>
         </div>
-        <Link to="/cabinet/new" className="btn btn--primary">
-          Создать заявку
-        </Link>
+        <div className="cabinet__actions">
+          <Link to="/cabinet/profile" className="btn btn--ghost">
+            Профиль
+          </Link>
+          <Link to="/cabinet/new" className="btn btn--primary">
+            Создать заявку
+          </Link>
+        </div>
       </div>
 
       {loading ? (

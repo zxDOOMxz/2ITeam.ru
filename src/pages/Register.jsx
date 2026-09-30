@@ -8,6 +8,7 @@ export default function Register() {
   const navigate = useNavigate()
 
   const [fullName, setFullName] = useState('')
+  const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -27,6 +28,7 @@ export default function Register() {
       email.trim(),
       password,
       fullName.trim(),
+      phone.trim(),
     )
     setBusy(false)
     if (err) {
@@ -67,6 +69,16 @@ export default function Register() {
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Иван"
                 autoComplete="name"
+              />
+            </label>
+            <label className="auth__field">
+              <span>Телефон</span>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+7 900 000-00-00"
+                autoComplete="tel"
               />
             </label>
             <label className="auth__field">

@@ -13,6 +13,7 @@ import Reset from './pages/Reset.jsx'
 import Cabinet from './pages/Cabinet.jsx'
 import NewTicket from './pages/NewTicket.jsx'
 import TicketDetail from './pages/TicketDetail.jsx'
+import Profile from './pages/Profile.jsx'
 import Admin from './pages/Admin.jsx'
 
 export default function App() {
@@ -51,6 +52,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <TicketDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cabinet/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

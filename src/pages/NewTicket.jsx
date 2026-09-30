@@ -7,7 +7,7 @@ import { PRIORITIES } from '../lib/tickets.js'
 import './Account.css'
 
 export default function NewTicket() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const navigate = useNavigate()
 
   const [subject, setSubject] = useState('')
@@ -25,6 +25,7 @@ export default function NewTicket() {
       .from('tickets')
       .insert({
         user_id: user.id,
+        company_id: profile?.company_id ?? null,
         subject: subject.trim(),
         service,
         priority,
