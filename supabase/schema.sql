@@ -67,6 +67,23 @@ alter table public.companies add column if not exists account text;
 alter table public.companies add column if not exists corr_account text;
 alter table public.companies add column if not exists contact_person text;
 
+-- Сообщения (переписка) внутри заявки
+create table if not exists public.ticket_messages (
+  id uuid primary key default gen_random_uuid(),
+  ticket_id uuid not null references public.tickets (id) on delete cascade,
+  author_id uuid references public.profiles (id) on delete set null,
+  author_name text,
+  author_role text,
+  body text not null,
+  is_internal boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.ticket_messages add column if not exists author_name text;
+alter table public.ticket_messages add column if not exists author_role text;
+
+create index if not exists ticket_messages_ticket_id_idx on public.ticket_messages (ticket_id);
+
 -- =========================================================
 -- Функции
 -- =========================================================
@@ -136,6 +153,46 @@ set search_path = public
 as $$
   select company_id from public.profiles where id = auth.uid();
 $$;
+
+-- Может ли текущий пользователь видеть заявку
+create or replace function public.can_view_ticket(p_ticket_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.tickets t
+    where t.id = p_ticket_id
+      and (
+        t.user_id = auth.uid()
+        or public.is_admin()
+        or (t.company_id is not null and t.company_id = public.current_company_id())
+      )
+  );
+$$;
+
+-- Автор сообщения: имя и роль подставляются автоматически
+create or replace function public.set_message_author()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  select coalesce(nullif(p.full_name, ''), p.email, 'Пользователь'), p.role
+    into new.author_name, new.author_role
+  from public.profiles p
+  where p.id = new.author_id;
+  return new;
+end;
+$$;
+
+drop trigger if exists ticket_messages_set_author on public.ticket_messages;
+create trigger ticket_messages_set_author
+  before insert on public.ticket_messages
+  for each row execute function public.set_message_author();
 
 -- Запрет менять себе роль (кроме админов и контекста SQL/сервиса)
 create or replace function public.prevent_role_change()
@@ -319,6 +376,22 @@ drop policy if exists tickets_delete_admin on public.tickets;
 create policy tickets_delete_admin on public.tickets
   for delete using (public.is_admin());
 
+-- ticket_messages: участники заявки; внутренние заметки — только админ
+drop policy if exists ticket_messages_select on public.ticket_messages;
+create policy ticket_messages_select on public.ticket_messages
+  for select using (
+    public.can_view_ticket(ticket_id)
+    and (is_internal = false or public.is_admin())
+  );
+
+drop policy if exists ticket_messages_insert on public.ticket_messages;
+create policy ticket_messages_insert on public.ticket_messages
+  for insert with check (
+    author_id = auth.uid()
+    and public.can_view_ticket(ticket_id)
+    and (is_internal = false or public.is_admin())
+  );
+
 -- =========================================================
 -- Права
 -- =========================================================
@@ -327,6 +400,7 @@ grant usage on schema public to anon, authenticated;
 grant all on public.profiles to authenticated;
 grant all on public.companies to authenticated;
 grant all on public.tickets to authenticated;
+grant all on public.ticket_messages to authenticated;
 grant usage, select on all sequences in schema public to authenticated;
 
 grant execute on function public.create_company(text, text) to authenticated;

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
+import { useAuth } from '../context/AuthContext.jsx'
 import {
   TICKET_STATUSES,
   STATUS_LABELS,
@@ -13,11 +14,19 @@ const TIMELINE = ['new', 'in_progress', 'waiting', 'resolved', 'closed']
 
 export default function TicketDetail() {
   const { id } = useParams()
+  const { user, isAdmin } = useAuth()
+
   const [ticket, setTicket] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [responding, setResponding] = useState(false)
   const [respondError, setRespondError] = useState('')
+
+  const [messages, setMessages] = useState([])
+  const [body, setBody] = useState('')
+  const [internal, setInternal] = useState(false)
+  const [posting, setPosting] = useState(false)
+  const [msgError, setMsgError] = useState('')
 
   const loadTicket = useCallback(async () => {
     const { data } = await supabase
@@ -32,9 +41,19 @@ export default function TicketDetail() {
     setLoading(false)
   }, [id])
 
+  const loadMessages = useCallback(async () => {
+    const { data } = await supabase
+      .from('ticket_messages')
+      .select('id, body, is_internal, created_at, author_name, author_role')
+      .eq('ticket_id', id)
+      .order('created_at', { ascending: true })
+    setMessages(data ?? [])
+  }, [id])
+
   useEffect(() => {
     loadTicket()
-  }, [loadTicket])
+    loadMessages()
+  }, [loadTicket, loadMessages])
 
   const respond = async (action) => {
     setResponding(true)
@@ -50,6 +69,27 @@ export default function TicketDetail() {
     }
     await loadTicket()
     setResponding(false)
+  }
+
+  const postMessage = async (event) => {
+    event.preventDefault()
+    if (!body.trim()) return
+    setPosting(true)
+    setMsgError('')
+    const { error } = await supabase.from('ticket_messages').insert({
+      ticket_id: id,
+      author_id: user.id,
+      body: body.trim(),
+      is_internal: isAdmin ? internal : false,
+    })
+    setPosting(false)
+    if (error) {
+      setMsgError(error.message || 'Не удалось отправить сообщение')
+      return
+    }
+    setBody('')
+    setInternal(false)
+    await loadMessages()
   }
 
   if (loading) {
@@ -135,6 +175,65 @@ export default function TicketDetail() {
             <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
               {ticket.description || '—'}
             </p>
+          </div>
+
+          <div className="detail-block">
+            <h2>Переписка</h2>
+            <div className="chat">
+              {messages.length === 0 && (
+                <p className="muted">Сообщений пока нет.</p>
+              )}
+              {messages.map((m) => (
+                <div
+                  key={m.id}
+                  className={`chat__msg ${
+                    m.author_role === 'admin' ? 'chat__msg--staff' : ''
+                  } ${m.is_internal ? 'chat__msg--internal' : ''}`}
+                >
+                  <div className="chat__head">
+                    <span className="chat__author">
+                      {m.author_name || 'Пользователь'}
+                      {m.author_role === 'admin' ? ' · поддержка' : ''}
+                    </span>
+                    <span className="chat__time">{formatDate(m.created_at)}</span>
+                  </div>
+                  <div className="chat__body">{m.body}</div>
+                  {m.is_internal && (
+                    <span className="chat__internal-tag">Внутренняя заметка</span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {msgError && <div className="alert alert--error">{msgError}</div>}
+
+            <form className="chat__form" onSubmit={postMessage}>
+              <textarea
+                rows={3}
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                placeholder="Написать сообщение…"
+              />
+              <div className="chat__form-row">
+                {isAdmin && (
+                  <label className="chat__internal-check">
+                    <input
+                      type="checkbox"
+                      checked={internal}
+                      onChange={(e) => setInternal(e.target.checked)}
+                    />
+                    Внутренняя заметка (клиент не увидит)
+                  </label>
+                )}
+                <button
+                  type="submit"
+                  className="btn btn--primary"
+                  disabled={posting || !body.trim()}
+                >
+                  {posting ? 'Отправляем…' : 'Отправить'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
 
