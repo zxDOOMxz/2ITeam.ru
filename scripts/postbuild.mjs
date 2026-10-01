@@ -77,7 +77,7 @@ const routes = [
 
 function applyMeta(html, route) {
   const fullTitle = `${route.title} — 2ITeam`
-  const url = `https://2iteam.ru${route.path}`
+  const url = `https://2iteam.ru${route.path}/`
   const desc = route.description.replace(/"/g, '&quot;')
 
   return html

@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { company } from '../config.js'
 
 const BASE_URL = 'https://2iteam.ru'
-const DEFAULT_IMAGE = `${BASE_URL}/og-image.svg`
+const DEFAULT_IMAGE = `${BASE_URL}/og-image.png`
 
 function upsertMeta(attr, key, content) {
   if (!content) return
@@ -31,7 +31,8 @@ export default function Seo({ title, description, path = '/', image, jsonLd }) {
     const fullTitle = title
       ? `${title} — ${company.name}`
       : `${company.name} — удалённые ИТ-услуги`
-    const url = BASE_URL + path
+    const cleanPath = (path || '/').replace(/\/+$/, '')
+    const url = cleanPath ? `${BASE_URL}${cleanPath}/` : `${BASE_URL}/`
     const img = image || DEFAULT_IMAGE
 
     document.title = fullTitle
