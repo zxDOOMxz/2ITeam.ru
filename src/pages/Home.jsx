@@ -107,12 +107,16 @@ export default function Home() {
             </p>
           </div>
           <div className="grid grid--3">
-            {services.slice(0, 6).map((service) => (
-              <div className="card service-card" key={service.id}>
+            {services.map((service) => (
+              <Link
+                to={`/services/${service.id}`}
+                className="card service-card"
+                key={service.id}
+              >
                 <div className="service-card__icon">{service.icon}</div>
                 <h3>{service.title}</h3>
                 <p>{service.short}</p>
-              </div>
+              </Link>
             ))}
           </div>
           <div className="text-center mt-32">
