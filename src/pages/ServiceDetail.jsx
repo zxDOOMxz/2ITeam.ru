@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
-import { services } from '../data/content.js'
+import { services, steps } from '../data/content.js'
 import { company } from '../config.js'
 import Seo from '../components/Seo.jsx'
 import './ServiceDetail.css'
@@ -76,8 +76,11 @@ export default function ServiceDetail() {
       <section className="section">
         <div className="container service-detail-page">
           <div>
-            <h2>Что мы делаем</h2>
+            <h2>Подробно</h2>
             <p className="service-detail-page__lead">{service.description}</p>
+            {service.details?.map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
 
             <h2>Что входит</h2>
             <ul className="feature-list">
@@ -85,6 +88,19 @@ export default function ServiceDetail() {
                 <li key={f}>{f}</li>
               ))}
             </ul>
+
+            <h2>Как мы работаем</h2>
+            <div className="service-steps">
+              {steps.map((s, i) => (
+                <div className="service-step" key={s.title}>
+                  <div className="service-step__num">{i + 1}</div>
+                  <div>
+                    <strong>{s.title}</strong>
+                    <p>{s.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           <aside className="service-detail-page__cta card">
