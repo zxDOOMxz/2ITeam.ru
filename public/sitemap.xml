@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://2iteam.ru/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://2iteam.ru/services</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://2iteam.ru/services/consulting</loc><priority>0.8</priority></url>
+  <url><loc>https://2iteam.ru/services/support</loc><priority>0.8</priority></url>
+  <url><loc>https://2iteam.ru/services/1c</loc><priority>0.8</priority></url>
+  <url><loc>https://2iteam.ru/services/software</loc><priority>0.8</priority></url>
+  <url><loc>https://2iteam.ru/services/apps</loc><priority>0.8</priority></url>
+  <url><loc>https://2iteam.ru/services/admin</loc><priority>0.8</priority></url>
+  <url><loc>https://2iteam.ru/services/automation</loc><priority>0.8</priority></url>
+  <url><loc>https://2iteam.ru/services/security</loc><priority>0.8</priority></url>
+  <url><loc>https://2iteam.ru/services/training</loc><priority>0.8</priority></url>
+  <url><loc>https://2iteam.ru/pricing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://2iteam.ru/about</loc><priority>0.6</priority></url>
+  <url><loc>https://2iteam.ru/contacts</loc><priority>0.7</priority></url>
+  <url><loc>https://2iteam.ru/faq</loc><priority>0.7</priority></url>
+  <url><loc>https://2iteam.ru/blog</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://2iteam.ru/blog/kak-vybrat-1c</loc><priority>0.6</priority></url>
+  <url><loc>https://2iteam.ru/blog/udalyonnaya-podderzhka-biznesa</loc><priority>0.6</priority></url>
+  <url><loc>https://2iteam.ru/blog/zashchita-ot-fishinga</loc><priority>0.6</priority></url>
+</urlset>

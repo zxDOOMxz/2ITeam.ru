@@ -1,12 +1,19 @@
 import { Link } from 'react-router-dom'
 import { services, advantages, steps } from '../data/content.js'
+import { cases } from '../data/seo.js'
 import { company, maxUrl } from '../config.js'
+import Seo from '../components/Seo.jsx'
 import RequestForm from '../components/RequestForm.jsx'
 import './Home.css'
 
 export default function Home() {
   return (
     <>
+      <Seo
+        title="Удалённые ИТ-услуги для бизнеса и частных лиц"
+        description="Сопровождение 1С, разработка ПО и приложений, техническая поддержка и администрирование удалённо. Консультации, акты для организаций."
+        path="/"
+      />
       <section className="hero">
         <div className="container hero__inner">
           <div className="hero__content">
@@ -128,6 +135,31 @@ export default function Home() {
                 <div className="step__num">{index + 1}</div>
                 <h3>{step.title}</h3>
                 <p>{step.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container">
+          <div className="section__head">
+            <span className="eyebrow">Кейсы</span>
+            <h2>Примеры работ</h2>
+            <p>Небольшие истории о том, как мы решали задачи клиентов.</p>
+          </div>
+          <div className="grid grid--3">
+            {cases.map((c) => (
+              <div className="card case-card" key={c.title}>
+                <h3>{c.title}</h3>
+                <p>{c.text}</p>
+                <div className="case-card__tags">
+                  {c.tags.map((t) => (
+                    <span className="badge" key={t}>
+                      {t}
+                    </span>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

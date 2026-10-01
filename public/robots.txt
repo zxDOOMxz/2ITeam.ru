@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /cabinet
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /reset
+
+Sitemap: https://2iteam.ru/sitemap.xml

@@ -325,6 +325,17 @@ ul {
   margin-top: 10px;
 }
 
+.service-detail__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.service-detail__actions .service-detail__btn {
+  margin-top: 0;
+}
+
 @media (max-width: 900px) {
   .contact-cta {
     grid-template-columns: 1fr;

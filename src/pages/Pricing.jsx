@@ -1,10 +1,16 @@
 import { Link } from 'react-router-dom'
 import { pricing } from '../data/content.js'
+import Seo from '../components/Seo.jsx'
 import './Pricing.css'
 
 export default function Pricing() {
   return (
     <>
+      <Seo
+        title="Тарифы"
+        description="Прозрачные цены на удалённую ИТ-поддержку: разовые консультации и месячные тарифы сопровождения для организаций и частных лиц."
+        path="/pricing"
+      />
       <section className="page-hero">
         <div className="container">
           <span className="eyebrow">Тарифы</span>

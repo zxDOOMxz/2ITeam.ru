@@ -1,10 +1,16 @@
 import { Link } from 'react-router-dom'
 import { services } from '../data/content.js'
+import Seo from '../components/Seo.jsx'
 import RequestForm from '../components/RequestForm.jsx'
 
 export default function Services() {
   return (
     <>
+      <Seo
+        title="Услуги"
+        description="Удалённые ИТ-услуги: консультации, техподдержка, сопровождение 1С, разработка ПО и приложений, администрирование, безопасность, обучение."
+        path="/services"
+      />
       <section className="page-hero">
         <div className="container">
           <span className="eyebrow">Услуги</span>
@@ -33,9 +39,17 @@ export default function Services() {
                     <li key={feature}>{feature}</li>
                   ))}
                 </ul>
-                <Link to="/contacts" className="btn btn--ghost service-detail__btn">
-                  Обсудить задачу
-                </Link>
+                <div className="service-detail__actions">
+                  <Link
+                    to={`/services/${service.id}`}
+                    className="btn btn--ghost service-detail__btn"
+                  >
+                    Подробнее
+                  </Link>
+                  <Link to="/contacts" className="btn btn--primary service-detail__btn">
+                    Обсудить задачу
+                  </Link>
+                </div>
               </article>
             ))}
           </div>

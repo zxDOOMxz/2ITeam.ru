@@ -1,4 +1,5 @@
 import { company, maxUrl } from '../config.js'
+import Seo from '../components/Seo.jsx'
 import RequestForm from '../components/RequestForm.jsx'
 import './Contacts.css'
 
@@ -29,6 +30,11 @@ const channels = [
 export default function Contacts() {
   return (
     <>
+      <Seo
+        title="Контакты"
+        description="Свяжитесь с 2ITeam: телефон, email и MAX. Оставьте заявку — уточним детали, предложим решение и назовём стоимость."
+        path="/contacts"
+      />
       <section className="page-hero">
         <div className="container">
           <span className="eyebrow">Контакты</span>

@@ -1,0 +1,17 @@
+{
+  "name": "2ITeam — ИТ-услуги",
+  "short_name": "2ITeam",
+  "description": "Удалённые ИТ-услуги: сопровождение 1С, разработка ПО и приложений, техподдержка.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

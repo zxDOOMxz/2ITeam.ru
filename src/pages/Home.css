@@ -181,6 +181,28 @@
   margin: 0;
 }
 
+.case-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.case-card h3 {
+  font-size: 1.05rem;
+}
+
+.case-card p {
+  color: var(--color-muted);
+  font-size: 0.93rem;
+  flex: 1;
+}
+
+.case-card__tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
 .step {
   position: relative;
   padding: 4px 0;

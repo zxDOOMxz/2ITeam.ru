@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { company } from '../config.js'
+import Seo from '../components/Seo.jsx'
 import './About.css'
 
 const values = [
@@ -23,6 +24,11 @@ const values = [
 export default function About() {
   return (
     <>
+      <Seo
+        title="О нас"
+        description="2ITeam — команда специалистов по ИТ-поддержке, 1С и разработке. Помогаем бизнесу и частным пользователям решать задачи удалённо."
+        path="/about"
+      />
       <section className="page-hero">
         <div className="container">
           <span className="eyebrow">О нас</span>
