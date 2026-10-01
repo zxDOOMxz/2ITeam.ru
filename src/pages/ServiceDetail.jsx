@@ -77,7 +77,6 @@ export default function ServiceDetail() {
         <div className="container service-detail-page">
           <div>
             <h2>Подробно</h2>
-            <p className="service-detail-page__lead">{service.description}</p>
             {service.details?.map((p, i) => (
               <p key={i}>{p}</p>
             ))}
