@@ -26,7 +26,7 @@ function upsertLink(rel, href) {
   el.setAttribute('href', href)
 }
 
-export default function Seo({ title, description, path = '/', image, jsonLd }) {
+export default function Seo({ title, description, path = '/', image, jsonLd, ogType }) {
   useEffect(() => {
     const fullTitle = title
       ? `${title} — ${company.name}`
@@ -37,6 +37,7 @@ export default function Seo({ title, description, path = '/', image, jsonLd }) {
 
     document.title = fullTitle
     upsertMeta('name', 'description', description)
+    upsertMeta('property', 'og:type', ogType || 'website')
     upsertMeta('property', 'og:title', fullTitle)
     upsertMeta('property', 'og:description', description)
     upsertMeta('property', 'og:url', url)
@@ -59,7 +60,7 @@ export default function Seo({ title, description, path = '/', image, jsonLd }) {
     } else if (script) {
       script.remove()
     }
-  }, [title, description, path, image, jsonLd])
+  }, [title, description, path, image, jsonLd, ogType])
 
   return null
 }

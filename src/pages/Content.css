@@ -2,6 +2,14 @@
   max-width: 820px;
 }
 
+.requisites {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
 /* FAQ */
 .faq__item {
   border: 1px solid var(--color-border);

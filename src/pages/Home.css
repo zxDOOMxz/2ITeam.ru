@@ -18,10 +18,20 @@
 }
 
 .hero h1 span {
-  background: linear-gradient(120deg, var(--color-primary), var(--color-accent));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--color-primary-dark);
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .hero h1 span {
+    background: linear-gradient(
+      120deg,
+      var(--color-primary),
+      var(--color-primary-dark)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
 
 .hero__content > p {

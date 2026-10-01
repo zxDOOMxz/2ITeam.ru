@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
+import NoIndex from './NoIndex.jsx'
 
 export default function ProtectedRoute({ children, adminOnly = false, staffOnly = false }) {
   const { session, isAdmin, isStaff, loading } = useAuth()
@@ -25,5 +26,10 @@ export default function ProtectedRoute({ children, adminOnly = false, staffOnly 
     return <Navigate to="/cabinet" replace />
   }
 
-  return children
+  return (
+    <>
+      <NoIndex />
+      {children}
+    </>
+  )
 }

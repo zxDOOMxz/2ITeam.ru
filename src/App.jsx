@@ -12,6 +12,10 @@ import ServiceDetail from './pages/ServiceDetail.jsx'
 import Faq from './pages/Faq.jsx'
 import Blog from './pages/Blog.jsx'
 import BlogPost from './pages/BlogPost.jsx'
+import Privacy from './pages/Privacy.jsx'
+import Consent from './pages/Consent.jsx'
+import Terms from './pages/Terms.jsx'
+import Requisites from './pages/Requisites.jsx'
 
 const Login = lazy(() => import('./pages/Login.jsx'))
 const Register = lazy(() => import('./pages/Register.jsx'))
@@ -47,6 +51,10 @@ export default function App() {
             <Route path="/faq" element={<Faq />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/consent" element={<Consent />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/requisites" element={<Requisites />} />
 
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

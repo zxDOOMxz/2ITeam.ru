@@ -46,6 +46,7 @@ export default function BlogPost() {
         description={post.description}
         path={`/blog/${slug}`}
         jsonLd={jsonLd}
+        ogType="article"
       />
 
       <section className="page-hero">

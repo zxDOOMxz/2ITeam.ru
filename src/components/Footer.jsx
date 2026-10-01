@@ -43,7 +43,12 @@ export default function Footer() {
         <span>
           © {year} {company.name}. Все права защищены.
         </span>
-        <span className="footer__note">Работаем удалённо по всей России</span>
+        <span className="footer__legal">
+          <Link to="/privacy">Политика конфиденциальности</Link>
+          <Link to="/consent">Согласие на обработку ПД</Link>
+          <Link to="/terms">Пользовательское соглашение</Link>
+          <Link to="/requisites">Реквизиты</Link>
+        </span>
       </div>
     </footer>
   )
