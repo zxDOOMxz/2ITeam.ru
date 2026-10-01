@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import {
@@ -16,6 +16,7 @@ const IMAGE_RE = /\.(jpe?g|png|gif|webp|bmp|svg)$/i
 
 export default function TicketDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { user, isStaff } = useAuth()
 
   const [ticket, setTicket] = useState(null)
@@ -23,6 +24,7 @@ export default function TicketDetail() {
   const [notFound, setNotFound] = useState(false)
   const [responding, setResponding] = useState(false)
   const [respondError, setRespondError] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   const [messages, setMessages] = useState([])
   const [signed, setSigned] = useState({})
@@ -36,7 +38,7 @@ export default function TicketDetail() {
     const { data } = await supabase
       .from('tickets')
       .select(
-        'id, number, subject, service, status, priority, description, created_at, updated_at, profiles(email, full_name, phone, companies(name))',
+        'id, number, user_id, subject, service, status, priority, description, created_at, updated_at, profiles(email, full_name, phone, companies(name))',
       )
       .eq('id', id)
       .maybeSingle()
@@ -114,6 +116,19 @@ export default function TicketDetail() {
     }
     await loadTicket()
     setResponding(false)
+  }
+
+  const removeTicket = async () => {
+    if (!window.confirm('Удалить заявку? Это действие необратимо.')) return
+    setDeleting(true)
+    setRespondError('')
+    const { error } = await supabase.from('tickets').delete().eq('id', id)
+    if (error) {
+      setDeleting(false)
+      setRespondError(error.message || 'Не удалось удалить заявку')
+      return
+    }
+    navigate('/cabinet', { replace: true })
   }
 
   const postMessage = async (event) => {
@@ -207,6 +222,16 @@ export default function TicketDetail() {
           <span className={`status-badge status-badge--${ticket.status}`}>
             {STATUS_LABELS[ticket.status] ?? ticket.status}
           </span>
+          {(isStaff || ticket.user_id === user?.id) && (
+            <button
+              type="button"
+              className="btn btn--ghost btn--sm btn--danger"
+              onClick={removeTicket}
+              disabled={deleting}
+            >
+              {deleting ? 'Удаляем…' : 'Удалить'}
+            </button>
+          )}
         </div>
       </div>
 

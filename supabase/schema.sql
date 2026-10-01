@@ -426,8 +426,9 @@ create policy tickets_update_admin on public.tickets
   for update using (public.is_staff()) with check (public.is_staff());
 
 drop policy if exists tickets_delete_admin on public.tickets;
-create policy tickets_delete_admin on public.tickets
-  for delete using (public.is_admin());
+drop policy if exists tickets_delete on public.tickets;
+create policy tickets_delete on public.tickets
+  for delete using (auth.uid() = user_id or public.is_staff());
 
 -- ticket_messages: участники заявки; внутренние заметки — только админ
 drop policy if exists ticket_messages_select on public.ticket_messages;

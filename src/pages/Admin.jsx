@@ -14,6 +14,7 @@ export default function Admin() {
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [deletingId, setDeletingId] = useState('')
 
   const load = useCallback(async () => {
     const { data, error: err } = await supabase
@@ -58,6 +59,21 @@ export default function Admin() {
       setError(err.message)
       setTickets(prev)
     }
+  }
+
+  const removeTicket = async (ticketId) => {
+    if (!window.confirm('Удалить заявку? Это действие необратимо.')) return
+    setDeletingId(ticketId)
+    const { error: err } = await supabase
+      .from('tickets')
+      .delete()
+      .eq('id', ticketId)
+    setDeletingId('')
+    if (err) {
+      setError(err.message)
+      return
+    }
+    setTickets((list) => list.filter((t) => t.id !== ticketId))
   }
 
   const stats = useMemo(() => {
@@ -188,17 +204,27 @@ export default function Admin() {
                     {!client?.email && !client?.phone && 'контактов нет'}
                   </div>
                 </div>
-                <select
-                  value={t.status}
-                  onChange={(e) => changeStatus(t.id, e.target.value)}
-                  aria-label="Статус заявки"
-                >
-                  {TICKET_STATUSES.map((s) => (
-                    <option key={s.value} value={s.value}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="admin-row__actions">
+                  <select
+                    value={t.status}
+                    onChange={(e) => changeStatus(t.id, e.target.value)}
+                    aria-label="Статус заявки"
+                  >
+                    {TICKET_STATUSES.map((s) => (
+                      <option key={s.value} value={s.value}>
+                        {s.label}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="btn btn--ghost btn--sm btn--danger"
+                    onClick={() => removeTicket(t.id)}
+                    disabled={deletingId === t.id}
+                  >
+                    {deletingId === t.id ? '…' : 'Удалить'}
+                  </button>
+                </div>
               </div>
             )
           })}
