@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
 import { company, maxUrl } from '../config.js'
+import { projects } from '../data/projects.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import './Header.css'
 
@@ -14,13 +15,33 @@ const navItems = [
 
 export default function Header() {
   const [open, setOpen] = useState(false)
+  const [projectsOpen, setProjectsOpen] = useState(false)
+  const dropdownRef = useRef(null)
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const { user, isAdmin, isStaff, signOut } = useAuth()
 
   useEffect(() => {
     setOpen(false)
+    setProjectsOpen(false)
   }, [pathname])
+
+  useEffect(() => {
+    const onClick = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setProjectsOpen(false)
+      }
+    }
+    const onKey = (event) => {
+      if (event.key === 'Escape') setProjectsOpen(false)
+    }
+    document.addEventListener('click', onClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('click', onClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [])
 
   const handleSignOut = async () => {
     await signOut()
@@ -51,6 +72,39 @@ export default function Header() {
               {item.label}
             </NavLink>
           ))}
+
+          <div className="header__dropdown" ref={dropdownRef}>
+            <button
+              type="button"
+              className={`header__link header__dropdown-toggle ${
+                projectsOpen ? 'is-open' : ''
+              }`}
+              aria-haspopup="true"
+              aria-expanded={projectsOpen}
+              onClick={() => setProjectsOpen((v) => !v)}
+            >
+              Проекты
+              <span className="header__caret" aria-hidden="true">
+                ▾
+              </span>
+            </button>
+            {projectsOpen && (
+              <div className="header__dropdown-menu">
+                {projects.map((project) => (
+                  <a
+                    key={project.id}
+                    className="header__dropdown-link"
+                    href={project.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => setProjectsOpen(false)}
+                  >
+                    {project.title}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
 
           {user ? (
             <>
