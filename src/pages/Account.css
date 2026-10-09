@@ -447,12 +447,24 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #cbd5e1;
-  transition: background 0.2s ease;
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+.chat-window__dot:nth-child(1) {
+  background: #f87171;
+}
+
+.chat-window__dot:nth-child(2) {
+  background: #fbbf24;
+}
+
+.chat-window__dot:nth-child(3) {
+  background: #34d399;
 }
 
 .chat-window__dot.is-on {
-  background: var(--color-success);
+  opacity: 1;
 }
 
 .chat-window__title {
