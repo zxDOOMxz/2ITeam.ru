@@ -1,6 +1,6 @@
 export const company = {
   name: import.meta.env.VITE_COMPANY_NAME || '2ITeam',
-  tagline: 'Удалённые ИТ-услуги для бизнеса и частных лиц',
+  tagline: 'Удалённый ИТ-аутсорс для бизнеса и частных лиц',
   phone: import.meta.env.VITE_CONTACT_PHONE || '+7 (915) 180-57-49',
   email: import.meta.env.VITE_CONTACT_EMAIL || 'support@2iteam.ru',
   max: import.meta.env.VITE_CONTACT_MAX || '2iteam',

@@ -30,7 +30,7 @@ export default function Seo({ title, description, path = '/', image, jsonLd, ogT
   useEffect(() => {
     const fullTitle = title
       ? `${title} — ${company.name}`
-      : `${company.name} — удалённые ИТ-услуги`
+      : `${company.name} — ИТ-аутсорс и удалённая поддержка бизнеса`
     const cleanPath = (path || '/').replace(/\/+$/, '')
     const url = cleanPath ? `${BASE_URL}${cleanPath}/` : `${BASE_URL}/`
     const img = image || DEFAULT_IMAGE

@@ -56,7 +56,7 @@ export default function Header() {
           <span className="header__logo">2IT</span>
           <span className="header__brand-text">
             <strong>{company.name}</strong>
-            <small>Удалённые ИТ-услуги</small>
+            <small>ИТ-аутсорс и поддержка</small>
           </span>
         </Link>
 
