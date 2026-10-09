@@ -304,11 +304,8 @@ export default function TicketDetail() {
             </p>
           </div>
 
-          <div className="detail-block">
-            <h2>Переписка</h2>
-
-            <div className="chat-window">
-              <div className="chat-window__head">
+          <div className="chat-window">
+            <div className="chat-window__head">
                 <span className="chat-window__dots" aria-hidden="true">
                   <span
                     className={`chat-window__dot ${statusLevel >= 1 ? 'is-on' : ''}`}
@@ -445,7 +442,6 @@ export default function TicketDetail() {
                 )}
               </form>
             </div>
-          </div>
         </div>
 
         <div>
