@@ -83,6 +83,12 @@
   gap: 0 16px;
 }
 
+.account-sep {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 24px 0;
+}
+
 .auth__links a {
   color: var(--color-primary);
   font-weight: 600;

@@ -79,6 +79,14 @@ export function AuthProvider({ children }) {
           redirectTo: `${window.location.origin}/reset`,
         }),
       updatePassword: (password) => supabase.auth.updateUser({ password }),
+      updateEmail: async (email) => {
+        const { data, error } = await supabase.auth.updateUser({ email })
+        if (!error) {
+          await supabase.from('profiles').update({ email }).eq('id', userId)
+          await loadProfile(userId)
+        }
+        return { data, error }
+      },
       reloadProfile: () => loadProfile(userId),
       updateProfile: async (fields) => {
         const { error } = await supabase

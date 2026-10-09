@@ -33,6 +33,8 @@ export default function Profile() {
     createCompany,
     joinCompany,
     leaveCompany,
+    updateEmail,
+    updatePassword,
   } = useAuth()
 
   const [profileForm, setProfileForm] = useState({
@@ -53,6 +55,13 @@ export default function Profile() {
   const [companyError, setCompanyError] = useState('')
   const [companyBusy, setCompanyBusy] = useState(false)
   const [copied, setCopied] = useState(false)
+
+  const [newEmail, setNewEmail] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [accountBusy, setAccountBusy] = useState(false)
+  const [accountMsg, setAccountMsg] = useState('')
+  const [accountErr, setAccountErr] = useState('')
 
   useEffect(() => {
     setProfileForm({
@@ -158,6 +167,47 @@ export default function Profile() {
     }
   }
 
+  const changeEmail = async (event) => {
+    event.preventDefault()
+    setAccountBusy(true)
+    setAccountErr('')
+    setAccountMsg('')
+    const { error: err } = await updateEmail(newEmail.trim())
+    setAccountBusy(false)
+    if (err) {
+      setAccountErr(err.message || 'Не удалось изменить почту')
+      return
+    }
+    setNewEmail('')
+    setAccountMsg(
+      'Почта изменена. Если включено подтверждение — проверьте новую почту и перейдите по ссылке.',
+    )
+  }
+
+  const changePassword = async (event) => {
+    event.preventDefault()
+    setAccountErr('')
+    setAccountMsg('')
+    if (newPassword.length < 6) {
+      setAccountErr('Пароль должен быть не короче 6 символов')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setAccountErr('Пароли не совпадают')
+      return
+    }
+    setAccountBusy(true)
+    const { error: err } = await updatePassword(newPassword)
+    setAccountBusy(false)
+    if (err) {
+      setAccountErr(err.message || 'Не удалось изменить пароль')
+      return
+    }
+    setNewPassword('')
+    setConfirmPassword('')
+    setAccountMsg('Пароль изменён.')
+  }
+
   return (
     <section className="container section">
       <div className="cabinet__head">
@@ -233,7 +283,7 @@ export default function Profile() {
       </div>
 
       <div className="detail-block">
-        <h2>Организация</h2>
+        <h2>Организация / ИП</h2>
 
         {companyError && <div className="alert alert--error">{companyError}</div>}
 
@@ -350,6 +400,73 @@ export default function Profile() {
             </form>
           </div>
         )}
+      </div>
+
+      <div className="detail-block">
+        <h2>Аккаунт и безопасность</h2>
+
+        {accountErr && <div className="alert alert--error">{accountErr}</div>}
+        {accountMsg && <div className="alert alert--success">{accountMsg}</div>}
+
+        <form onSubmit={changeEmail}>
+          <div className="form-grid">
+            <label className="auth__field">
+              <span>Текущая почта (логин для входа)</span>
+              <input type="email" value={user?.email || ''} disabled />
+            </label>
+            <label className="auth__field">
+              <span>Новая почта</span>
+              <input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="new@example.com"
+                autoComplete="email"
+              />
+            </label>
+          </div>
+          <button
+            type="submit"
+            className="btn btn--primary"
+            disabled={accountBusy || !newEmail.trim()}
+          >
+            Изменить почту
+          </button>
+        </form>
+
+        <hr className="account-sep" />
+
+        <form onSubmit={changePassword}>
+          <div className="form-grid">
+            <label className="auth__field">
+              <span>Новый пароль</span>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Минимум 6 символов"
+                autoComplete="new-password"
+              />
+            </label>
+            <label className="auth__field">
+              <span>Повторите пароль</span>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Ещё раз"
+                autoComplete="new-password"
+              />
+            </label>
+          </div>
+          <button
+            type="submit"
+            className="btn btn--primary"
+            disabled={accountBusy || !newPassword}
+          >
+            Изменить пароль
+          </button>
+        </form>
       </div>
     </section>
   )
