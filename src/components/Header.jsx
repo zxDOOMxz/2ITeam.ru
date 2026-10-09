@@ -10,6 +10,7 @@ const navItems = [
   { to: '/services', label: 'Услуги' },
   { to: '/pricing', label: 'Тарифы' },
   { to: '/about', label: 'О нас' },
+  { projects: true },
   { to: '/contacts', label: 'Контакты' },
 ]
 
@@ -60,51 +61,57 @@ export default function Header() {
         </Link>
 
         <nav className={`header__nav ${open ? 'is-open' : ''}`}>
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              className={({ isActive }) =>
-                `header__link ${isActive ? 'is-active' : ''}`
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-
-          <div className="header__dropdown" ref={dropdownRef}>
-            <button
-              type="button"
-              className={`header__link header__dropdown-toggle ${
-                projectsOpen ? 'is-open' : ''
-              }`}
-              aria-haspopup="true"
-              aria-expanded={projectsOpen}
-              onClick={() => setProjectsOpen((v) => !v)}
-            >
-              Проекты
-              <span className="header__caret" aria-hidden="true">
-                ▾
-              </span>
-            </button>
-            {projectsOpen && (
-              <div className="header__dropdown-menu">
-                {projects.map((project) => (
-                  <a
-                    key={project.id}
-                    className="header__dropdown-link"
-                    href={project.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={() => setProjectsOpen(false)}
-                  >
-                    {project.title}
-                  </a>
-                ))}
+          {navItems.map((item) =>
+            item.projects ? (
+              <div
+                className="header__dropdown"
+                ref={dropdownRef}
+                key="projects"
+              >
+                <button
+                  type="button"
+                  className={`header__link header__dropdown-toggle ${
+                    projectsOpen ? 'is-open' : ''
+                  }`}
+                  aria-haspopup="true"
+                  aria-expanded={projectsOpen}
+                  onClick={() => setProjectsOpen((v) => !v)}
+                >
+                  Проекты
+                  <span className="header__caret" aria-hidden="true">
+                    ▾
+                  </span>
+                </button>
+                {projectsOpen && (
+                  <div className="header__dropdown-menu">
+                    {projects.map((project) => (
+                      <a
+                        key={project.id}
+                        className="header__dropdown-link"
+                        href={project.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() => setProjectsOpen(false)}
+                      >
+                        {project.title}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            ) : (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === '/'}
+                className={({ isActive }) =>
+                  `header__link ${isActive ? 'is-active' : ''}`
+                }
+              >
+                {item.label}
+              </NavLink>
+            ),
+          )}
 
           {user ? (
             <>
