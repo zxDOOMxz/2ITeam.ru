@@ -51,7 +51,7 @@ export default function TicketDetail() {
     const { data } = await supabase
       .from('ticket_messages')
       .select(
-        'id, body, is_internal, created_at, author_name, author_role, attachments',
+        'id, body, is_internal, created_at, author_id, author_name, author_role, attachments, delivered_at, read_at',
       )
       .eq('ticket_id', id)
       .order('created_at', { ascending: true })
@@ -71,7 +71,15 @@ export default function TicketDetail() {
     } else {
       setSigned({})
     }
-  }, [id])
+
+    // отметить входящие сообщения прочитанными
+    const hasUnread = list.some(
+      (m) => m.author_id !== user?.id && !m.is_internal && !m.read_at,
+    )
+    if (hasUnread) {
+      supabase.rpc('mark_ticket_read', { p_ticket_id: id }).then(() => {})
+    }
+  }, [id, user?.id])
 
   useEffect(() => {
     loadTicket()
@@ -205,6 +213,24 @@ export default function TicketDetail() {
     ? client.companies[0]
     : client?.companies
 
+  const myLast = [...messages]
+    .reverse()
+    .find((m) => m.author_id === user?.id && !m.is_internal)
+  let statusLevel = 0
+  let statusLabel = ''
+  if (myLast) {
+    if (myLast.read_at) {
+      statusLevel = 3
+      statusLabel = 'Прочитано'
+    } else if (myLast.delivered_at) {
+      statusLevel = 2
+      statusLabel = 'Доставлено'
+    } else {
+      statusLevel = 1
+      statusLabel = 'Отправлено'
+    }
+  }
+
   return (
     <section className="container section">
       <div className="ticket-detail__head">
@@ -280,103 +306,145 @@ export default function TicketDetail() {
 
           <div className="detail-block">
             <h2>Переписка</h2>
-            <div className="chat">
-              {messages.length === 0 && (
-                <p className="muted">Сообщений пока нет.</p>
-              )}
-              {messages.map((m) => (
-                <div
-                  key={m.id}
-                  className={`chat__msg ${
-                    m.author_role === 'admin' ? 'chat__msg--staff' : ''
-                  } ${m.is_internal ? 'chat__msg--internal' : ''}`}
-                >
-                  <div className="chat__head">
-                    <span className="chat__author">
-                      {m.author_name || 'Пользователь'}
-                      {m.author_role === 'admin' ? ' · поддержка' : ''}
-                    </span>
-                    <span className="chat__time">{formatDate(m.created_at)}</span>
-                  </div>
-                  {m.body && <div className="chat__body">{m.body}</div>}
-                  {m.attachments?.length > 0 && (
-                    <div className="chat__files">
-                      {m.attachments.map((a) =>
-                        IMAGE_RE.test(a.name) && signed[a.path] ? (
-                          <a
-                            key={a.path}
-                            href={signed[a.path]}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="chat__thumb-link"
-                          >
-                            <img
-                              src={signed[a.path]}
-                              alt={a.name}
-                              className="chat__thumb"
-                            />
-                          </a>
-                        ) : (
-                          <a
-                            key={a.path}
-                            href={signed[a.path] || '#'}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="chat__file"
-                          >
-                            📎 {a.name}
-                          </a>
-                        ),
-                      )}
-                    </div>
-                  )}
-                  {m.is_internal && (
-                    <span className="chat__internal-tag">Внутренняя заметка</span>
-                  )}
-                </div>
-              ))}
-            </div>
 
-            {msgError && <div className="alert alert--error">{msgError}</div>}
-
-            <form className="chat__form" onSubmit={postMessage}>
-              <textarea
-                rows={3}
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                placeholder="Написать сообщение…"
-              />
-              <input
-                type="file"
-                multiple
-                className="chat__file-input"
-                onChange={(e) => setFiles(Array.from(e.target.files))}
-              />
-              {files.length > 0 && (
-                <div className="chat__pending">
-                  Прикреплено: {files.map((f) => f.name).join(', ')}
-                </div>
-              )}
-              <div className="chat__form-row">
-                {isStaff && (
-                  <label className="chat__internal-check">
-                    <input
-                      type="checkbox"
-                      checked={internal}
-                      onChange={(e) => setInternal(e.target.checked)}
-                    />
-                    Внутренняя заметка (клиент не увидит)
-                  </label>
+            <div className="chat-window">
+              <div className="chat-window__head">
+                <span className="chat-window__dots" aria-hidden="true">
+                  <span
+                    className={`chat-window__dot ${statusLevel >= 1 ? 'is-on' : ''}`}
+                  />
+                  <span
+                    className={`chat-window__dot ${statusLevel >= 2 ? 'is-on' : ''}`}
+                  />
+                  <span
+                    className={`chat-window__dot ${statusLevel >= 3 ? 'is-on' : ''}`}
+                  />
+                </span>
+                <span className="chat-window__title">Переписка по заявке</span>
+                {statusLabel && (
+                  <span className="chat-window__status">{statusLabel}</span>
                 )}
-                <button
-                  type="submit"
-                  className="btn btn--primary"
-                  disabled={posting || (!body.trim() && files.length === 0)}
-                >
-                  {posting ? 'Отправляем…' : 'Отправить'}
-                </button>
               </div>
-            </form>
+
+              <div className="chat-window__body">
+                {messages.length === 0 && (
+                  <p className="muted">Сообщений пока нет.</p>
+                )}
+                {messages.map((m) => {
+                  const mine = m.author_id === user?.id
+                  return (
+                    <div
+                      key={m.id}
+                      className={`chat-msg ${
+                        mine ? 'chat-msg--out' : 'chat-msg--in'
+                      } ${m.is_internal ? 'chat-msg--internal' : ''}`}
+                    >
+                      <div className="chat-msg__bubble">
+                        {!mine && (
+                          <div className="chat-msg__author">
+                            {m.author_name || 'Пользователь'}
+                            {m.author_role === 'admin' ||
+                            m.author_role === 'manager'
+                              ? ' · поддержка'
+                              : ''}
+                          </div>
+                        )}
+                        {m.body && (
+                          <div className="chat-msg__text">{m.body}</div>
+                        )}
+                        {m.attachments?.length > 0 && (
+                          <div className="chat__files">
+                            {m.attachments.map((a) =>
+                              IMAGE_RE.test(a.name) && signed[a.path] ? (
+                                <a
+                                  key={a.path}
+                                  href={signed[a.path]}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="chat__thumb-link"
+                                >
+                                  <img
+                                    src={signed[a.path]}
+                                    alt={a.name}
+                                    className="chat__thumb"
+                                  />
+                                </a>
+                              ) : (
+                                <a
+                                  key={a.path}
+                                  href={signed[a.path] || '#'}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="chat__file"
+                                >
+                                  📎 {a.name}
+                                </a>
+                              ),
+                            )}
+                          </div>
+                        )}
+                        {m.is_internal && (
+                          <span className="chat__internal-tag">
+                            Внутренняя заметка
+                          </span>
+                        )}
+                      </div>
+                      <div className="chat-msg__time">
+                        {formatDate(m.created_at)}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {msgError && (
+                <div className="alert alert--error chat-window__error">
+                  {msgError}
+                </div>
+              )}
+
+              <form className="chat-window__foot" onSubmit={postMessage}>
+                <textarea
+                  rows={2}
+                  className="chat-window__input"
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  placeholder="Написать сообщение…"
+                />
+                <div className="chat-window__foot-row">
+                  <label className="chat-window__attach">
+                    <input
+                      type="file"
+                      multiple
+                      onChange={(e) => setFiles(Array.from(e.target.files))}
+                    />
+                    <span className="btn btn--ghost btn--sm">📎 Прикрепить</span>
+                  </label>
+                  {isStaff && (
+                    <label className="chat__internal-check">
+                      <input
+                        type="checkbox"
+                        checked={internal}
+                        onChange={(e) => setInternal(e.target.checked)}
+                      />
+                      Внутренняя заметка
+                    </label>
+                  )}
+                  <button
+                    type="submit"
+                    className="btn btn--primary"
+                    disabled={posting || (!body.trim() && files.length === 0)}
+                  >
+                    {posting ? 'Отправляем…' : 'Отправить'}
+                  </button>
+                </div>
+                {files.length > 0 && (
+                  <div className="chat__pending">
+                    Прикреплено: {files.map((f) => f.name).join(', ')}
+                  </div>
+                )}
+              </form>
+            </div>
           </div>
         </div>
 

@@ -23,6 +23,8 @@ export default function Cabinet() {
         setTickets(data ?? [])
         setLoading(false)
       })
+    // отмечаем входящие сообщения доставленными
+    supabase.rpc('mark_delivered_all').then(() => {})
     return () => {
       active = false
     }

@@ -88,6 +88,8 @@ create table if not exists public.ticket_messages (
 alter table public.ticket_messages add column if not exists author_name text;
 alter table public.ticket_messages add column if not exists author_role text;
 alter table public.ticket_messages add column if not exists attachments jsonb not null default '[]'::jsonb;
+alter table public.ticket_messages add column if not exists delivered_at timestamptz;
+alter table public.ticket_messages add column if not exists read_at timestamptz;
 
 create index if not exists ticket_messages_ticket_id_idx on public.ticket_messages (ticket_id);
 
@@ -362,6 +364,49 @@ begin
 end;
 $$;
 
+-- Отметить входящие сообщения доставленными (при открытии кабинета)
+create or replace function public.mark_delivered_all()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    return;
+  end if;
+  update public.ticket_messages m
+    set delivered_at = now()
+    where m.delivered_at is null
+      and m.author_id <> auth.uid()
+      and m.is_internal = false
+      and public.can_view_ticket(m.ticket_id);
+end;
+$$;
+
+-- Отметить сообщения заявки прочитанными (при открытии заявки)
+create or replace function public.mark_ticket_read(p_ticket_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    return;
+  end if;
+  if not public.can_view_ticket(p_ticket_id) then
+    return;
+  end if;
+  update public.ticket_messages m
+    set read_at = coalesce(m.read_at, now()),
+        delivered_at = coalesce(m.delivered_at, now())
+    where m.ticket_id = p_ticket_id
+      and m.author_id <> auth.uid()
+      and m.is_internal = false;
+end;
+$$;
+
 -- =========================================================
 -- RLS
 -- =========================================================
@@ -461,6 +506,8 @@ grant execute on function public.create_company(text, text) to authenticated;
 grant execute on function public.join_company(text) to authenticated;
 grant execute on function public.leave_company() to authenticated;
 grant execute on function public.respond_to_ticket(uuid, text) to authenticated;
+grant execute on function public.mark_delivered_all() to authenticated;
+grant execute on function public.mark_ticket_read(uuid) to authenticated;
 
 -- =========================================================
 -- Хранилище файлов (вложения к сообщениям)
