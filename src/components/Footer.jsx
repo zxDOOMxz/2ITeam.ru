@@ -14,7 +14,7 @@ export default function Footer() {
             <strong>{company.name}</strong>
           </div>
           <p className="footer__about">
-            Удалённый ИТ-аутсорс, поддержка и сопровождение 1С для бизнеса и
+            Удалённый ИТ-аутсорсинг, поддержка и сопровождение 1С для бизнеса и
             частных лиц.
           </p>
         </div>
