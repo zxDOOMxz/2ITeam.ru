@@ -19,7 +19,7 @@ export default function Home() {
           <div className="hero__content">
             <span className="badge">Работаем удалённо по всей России</span>
             <h1>
-              ИТ-аутсорсинг и поддержка <span>онлайн</span>
+              ИТ-аутсорсинг <span>онлайн</span>
             </h1>
             <p>
               Берём на себя ИТ-задачи бизнеса и частных пользователей: поддержка
