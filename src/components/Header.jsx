@@ -17,7 +17,9 @@ const navItems = [
 export default function Header() {
   const [open, setOpen] = useState(false)
   const [projectsOpen, setProjectsOpen] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
   const dropdownRef = useRef(null)
+  const accountRef = useRef(null)
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const { user, isAdmin, isStaff, signOut } = useAuth()
@@ -25,6 +27,7 @@ export default function Header() {
   useEffect(() => {
     setOpen(false)
     setProjectsOpen(false)
+    setAccountOpen(false)
   }, [pathname])
 
   useEffect(() => {
@@ -32,9 +35,15 @@ export default function Header() {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setProjectsOpen(false)
       }
+      if (accountRef.current && !accountRef.current.contains(event.target)) {
+        setAccountOpen(false)
+      }
     }
     const onKey = (event) => {
-      if (event.key === 'Escape') setProjectsOpen(false)
+      if (event.key === 'Escape') {
+        setProjectsOpen(false)
+        setAccountOpen(false)
+      }
     }
     document.addEventListener('click', onClick)
     document.addEventListener('keydown', onKey)
@@ -114,43 +123,68 @@ export default function Header() {
           )}
 
           {user ? (
-            <>
-              <NavLink
-                to="/cabinet"
-                className={({ isActive }) =>
-                  `header__link ${isActive ? 'is-active' : ''}`
-                }
-              >
-                Кабинет
-              </NavLink>
-              {isStaff && (
-                <NavLink
-                  to="/admin"
-                  className={({ isActive }) =>
-                    `header__link ${isActive ? 'is-active' : ''}`
-                  }
-                >
-                  Админка
-                </NavLink>
-              )}
-              {isAdmin && (
-                <NavLink
-                  to="/admin/users"
-                  className={({ isActive }) =>
-                    `header__link ${isActive ? 'is-active' : ''}`
-                  }
-                >
-                  Пользователи
-                </NavLink>
-              )}
+            <div className="header__dropdown" ref={accountRef}>
               <button
                 type="button"
-                className="header__link header__link--btn"
-                onClick={handleSignOut}
+                className={`header__link header__dropdown-toggle ${
+                  accountOpen ? 'is-open' : ''
+                }`}
+                aria-haspopup="true"
+                aria-expanded={accountOpen}
+                onClick={() => setAccountOpen((v) => !v)}
               >
-                Выйти
+                Кабинет
+                <span className="header__caret" aria-hidden="true">
+                  ▾
+                </span>
               </button>
-            </>
+              {accountOpen && (
+                <div className="header__dropdown-menu">
+                  <NavLink
+                    to="/cabinet"
+                    className="header__dropdown-link"
+                    onClick={() => setAccountOpen(false)}
+                  >
+                    Кабинет
+                  </NavLink>
+                  <NavLink
+                    to="/cabinet/profile"
+                    className="header__dropdown-link"
+                    onClick={() => setAccountOpen(false)}
+                  >
+                    Профиль
+                  </NavLink>
+                  {isStaff && (
+                    <NavLink
+                      to="/admin"
+                      className="header__dropdown-link"
+                      onClick={() => setAccountOpen(false)}
+                    >
+                      Админка
+                    </NavLink>
+                  )}
+                  {isAdmin && (
+                    <NavLink
+                      to="/admin/users"
+                      className="header__dropdown-link"
+                      onClick={() => setAccountOpen(false)}
+                    >
+                      Пользователи
+                    </NavLink>
+                  )}
+                  <button
+                    type="button"
+                    className="header__dropdown-link header__dropdown-link--btn"
+                    onClick={() => {
+                      setAccountOpen(false)
+                      handleSignOut()
+                    }}
+                  >
+                    Выйти
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <NavLink
               to="/login"

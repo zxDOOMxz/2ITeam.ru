@@ -149,6 +149,16 @@
   color: var(--color-primary);
 }
 
+.header__dropdown-link--btn {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
 .header__phone {
   font-weight: 700;
   font-size: 0.95rem;
