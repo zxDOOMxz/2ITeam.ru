@@ -86,7 +86,7 @@ export default function Header() {
                   aria-expanded={projectsOpen}
                   onClick={() => setProjectsOpen((v) => !v)}
                 >
-                  Проекты
+                  Наши проекты
                   <span className="header__caret" aria-hidden="true">
                     ▾
                   </span>
