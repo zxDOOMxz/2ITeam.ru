@@ -5,12 +5,14 @@ import { projects } from '../data/projects.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import './Header.css'
 
+const SHOW_PROJECTS = false
+
 const navItems = [
   { to: '/', label: 'Главная' },
   { to: '/services', label: 'Услуги' },
   { to: '/pricing', label: 'Тарифы' },
   { to: '/about', label: 'О нас' },
-  { projects: true },
+  ...(SHOW_PROJECTS ? [{ projects: true }] : []),
   { to: '/contacts', label: 'Контакты' },
 ]
 
