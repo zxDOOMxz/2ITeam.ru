@@ -4,18 +4,19 @@ import Layout from './components/Layout.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import Home from './pages/Home.jsx'
-import Services from './pages/Services.jsx'
-import Pricing from './pages/Pricing.jsx'
-import About from './pages/About.jsx'
-import Contacts from './pages/Contacts.jsx'
-import ServiceDetail from './pages/ServiceDetail.jsx'
-import Faq from './pages/Faq.jsx'
-import Blog from './pages/Blog.jsx'
-import BlogPost from './pages/BlogPost.jsx'
-import Privacy from './pages/Privacy.jsx'
-import Consent from './pages/Consent.jsx'
-import Terms from './pages/Terms.jsx'
-import Requisites from './pages/Requisites.jsx'
+
+const Services = lazy(() => import('./pages/Services.jsx'))
+const ServiceDetail = lazy(() => import('./pages/ServiceDetail.jsx'))
+const Pricing = lazy(() => import('./pages/Pricing.jsx'))
+const About = lazy(() => import('./pages/About.jsx'))
+const Contacts = lazy(() => import('./pages/Contacts.jsx'))
+const Faq = lazy(() => import('./pages/Faq.jsx'))
+const Blog = lazy(() => import('./pages/Blog.jsx'))
+const BlogPost = lazy(() => import('./pages/BlogPost.jsx'))
+const Privacy = lazy(() => import('./pages/Privacy.jsx'))
+const Consent = lazy(() => import('./pages/Consent.jsx'))
+const Terms = lazy(() => import('./pages/Terms.jsx'))
+const Requisites = lazy(() => import('./pages/Requisites.jsx'))
 
 const Login = lazy(() => import('./pages/Login.jsx'))
 const Register = lazy(() => import('./pages/Register.jsx'))

@@ -64,6 +64,20 @@ export default function Admin() {
   const removeTicket = async (ticketId) => {
     if (!window.confirm('Удалить заявку? Это действие необратимо.')) return
     setDeletingId(ticketId)
+    try {
+      const { data: msgs } = await supabase
+        .from('ticket_messages')
+        .select('attachments')
+        .eq('ticket_id', ticketId)
+      const paths = (msgs || []).flatMap((m) =>
+        (m.attachments || []).map((a) => a.path),
+      )
+      if (paths.length) {
+        await supabase.storage.from('ticket-files').remove(paths)
+      }
+    } catch {
+      // очистка файлов не критична
+    }
     const { error: err } = await supabase
       .from('tickets')
       .delete()

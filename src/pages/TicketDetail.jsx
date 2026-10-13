@@ -13,6 +13,10 @@ import './Account.css'
 const TIMELINE = ['new', 'in_progress', 'waiting', 'resolved', 'closed']
 const BUCKET = 'ticket-files'
 const IMAGE_RE = /\.(jpe?g|png|gif|webp|bmp|svg)$/i
+const MAX_FILE_MB = 10
+const MAX_FILES = 5
+const ALLOWED_RE =
+  /\.(jpe?g|png|gif|webp|bmp|svg|pdf|docx?|xlsx?|pptx?|txt|csv|zip|rar|7z)$/i
 
 export default function TicketDetail() {
   const { id } = useParams()
@@ -130,6 +134,20 @@ export default function TicketDetail() {
     if (!window.confirm('Удалить заявку? Это действие необратимо.')) return
     setDeleting(true)
     setRespondError('')
+    try {
+      const { data: msgs } = await supabase
+        .from('ticket_messages')
+        .select('attachments')
+        .eq('ticket_id', id)
+      const paths = (msgs || []).flatMap((m) =>
+        (m.attachments || []).map((a) => a.path),
+      )
+      if (paths.length) {
+        await supabase.storage.from(BUCKET).remove(paths)
+      }
+    } catch {
+      // очистка файлов не критична
+    }
     const { error } = await supabase.from('tickets').delete().eq('id', id)
     if (error) {
       setDeleting(false)
@@ -137,6 +155,30 @@ export default function TicketDetail() {
       return
     }
     navigate('/cabinet', { replace: true })
+  }
+
+  const pickFiles = (event) => {
+    const list = Array.from(event.target.files || [])
+    event.target.value = ''
+    if (list.length > MAX_FILES) {
+      setMsgError(`Можно прикрепить не более ${MAX_FILES} файлов`)
+      setFiles([])
+      return
+    }
+    const tooBig = list.find((f) => f.size > MAX_FILE_MB * 1024 * 1024)
+    if (tooBig) {
+      setMsgError(`Файл «${tooBig.name}» больше ${MAX_FILE_MB} МБ`)
+      setFiles([])
+      return
+    }
+    const bad = list.find((f) => !ALLOWED_RE.test(f.name))
+    if (bad) {
+      setMsgError(`Недопустимый тип файла: ${bad.name}`)
+      setFiles([])
+      return
+    }
+    setMsgError('')
+    setFiles(list)
   }
 
   const postMessage = async (event) => {
@@ -410,11 +452,7 @@ export default function TicketDetail() {
                 />
                 <div className="chat-window__foot-row">
                   <label className="chat-window__attach">
-                    <input
-                      type="file"
-                      multiple
-                      onChange={(e) => setFiles(Array.from(e.target.files))}
-                    />
+                    <input type="file" multiple onChange={pickFiles} />
                     <span className="btn btn--ghost btn--sm">📎 Прикрепить</span>
                   </label>
                   {isStaff && (
